@@ -31,52 +31,6 @@ Python 3.12가 없다면 [python.org](https://www.python.org/downloads/release/p
 
 ---
 
-## 주제 관리 보드 (`topics/`)
-
-후보 주제를 카드 형태로 정리·비교하기 위한 정적 웹페이지. 별도 백엔드 없이 브라우저 LocalStorage + JSON 파일로 동작한다.
-
-### 실행 방법 (VS Code Live Server 권장)
-
-1. VS Code 확장에서 **Live Server** (Ritwick Dey) 설치
-2. `topics/index.html` 우클릭 → **Open with Live Server**
-3. 브라우저가 `http://127.0.0.1:5500/topics/` 로 자동 오픈
-
-> `file://` 로 직접 열면 `data/topics.json` 로딩이 CORS로 실패한다. 최초 1회만 Live Server로 띄우면 이후엔 LocalStorage에 캐싱되어 오프라인에서도 동작.
-
-대안으로 Python 내장 서버를 써도 된다.
-
-```powershell
-python -m http.server 8000
-# 브라우저에서 http://localhost:8000/topics/
-```
-
-### 기능
-
-- **카드 그리드**: 제목·상태·카테고리·문제 정의·모델·담당자 한눈에
-- **필터/검색**: 상태(후보/검토중/채택/폐기), 카테고리(분류/회귀/비지도), 텍스트 검색
-- **편집기**: 카드 클릭으로 수정, `+ 새 주제` 버튼으로 추가, 모달 내 삭제
-- **JSON 내보내기/불러오기**: 팀원 간 데이터 공유용
-- **초기화**: LocalStorage 비우고 `topics/data/topics.json` 원본으로 복귀
-
-### 팀 협업 흐름
-
-1. 각자 브라우저에서 주제 수정 → `JSON 내보내기` 로 파일 다운로드
-2. 받은 파일을 `topics/data/topics.json` 에 덮어쓰고 git 커밋·푸시
-3. 다른 팀원은 `git pull` 후 페이지에서 `초기화` 클릭하여 최신본 로드
-
-### 파일 구조
-
-```
-topics/
-├── index.html      # 페이지 마크업
-├── style.css       # 스타일 (다크/라이트 자동)
-├── script.js       # 렌더링·필터·편집·import/export
-└── data/
-    └── topics.json # 주제 데이터 (git 추적 대상)
-```
-
----
-
 ## 프로젝트 개요
 
 머신러닝 또는 딥러닝 기법을 활용하여 실제 데이터 기반 문제를 정의하고 해결하는 전 과정을 수행한다.
@@ -101,7 +55,6 @@ topics/
 ### 알고리즘 설명 자료
 
 - 문서형 정리: [`ALGORITHMS.md`](ALGORITHMS.md)
-- 삼성 중고가 예측 모델링 계획: [`references/samsung-used-price-modeling-plan.md`](references/samsung-used-price-modeling-plan.md)
 
 ---
 
