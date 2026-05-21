@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>프로젝트 일정 관리 - 데이터마이닝 텀프로젝트</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="title-block">
+        <nav class="page-nav">
+          <a href="index.html" class="page-nav-link">📊 Topics</a>
+          <a href="calendar.html" class="page-nav-link active">📅 Calendar</a>
+        </nav>
+        <h1 id="header-title">📅 프로젝트 일정 관리</h1>
+        <p class="subtitle" id="header-subtitle">불러오는 중…</p>
+      </div>
+      <div class="schedule-meta">
+        <div class="meta-pill" id="dday-pill">
+          <span class="meta-label">학기 종료까지</span>
+          <strong id="dday-value">D-?</strong>
+        </div>
+        <div class="meta-pill">
+          <span class="meta-label">전체 진행률</span>
+          <strong id="overall-pct">0%</strong>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="overall-progress">
+      <div class="progress-track">
+        <div class="progress-fill" id="overall-bar" style="width:0%"></div>
+      </div>
+      <p class="progress-caption" id="overall-caption">0 / 0 완료</p>
+    </section>
+
+    <section id="today-section" class="today" hidden>
+      <h2 class="section-title">오늘 할 일</h2>
+      <ul id="today-list" class="today-list"></ul>
+    </section>
+
+    <section id="milestones" class="milestones"></section>
+
+    <p id="cal-empty" class="empty" hidden>일정 데이터를 불러올 수 없습니다.</p>
+  </main>
+
+  <script src="script-calendar.js"></script>
+</body>
+</html>

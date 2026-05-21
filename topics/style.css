@@ -1,0 +1,758 @@
+:root {
+  --bg: #0b1220;
+  --bg-soft: #111a2e;
+  --panel: #14203a;
+  --panel-2: #1a2747;
+  --border: #243154;
+  --text: #e6ecff;
+  --text-dim: #9aa6c7;
+  --accent: #6aa8ff;
+  --accent-strong: #3d82ff;
+  --good: #4ade80;
+  --warn: #facc15;
+  --bad: #f87171;
+  --info: #60a5fa;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --radius: 12px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f7fb;
+    --bg-soft: #ffffff;
+    --panel: #ffffff;
+    --panel-2: #f1f4fa;
+    --border: #dde3ee;
+    --text: #1b2440;
+    --text-dim: #5b6890;
+    --shadow: 0 4px 16px rgba(28, 40, 80, 0.08);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.topbar {
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+  padding: 22px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-primary {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+}
+
+.btn-ghost:hover {
+  color: var(--bad);
+  border-color: transparent;
+}
+
+main {
+  padding: 28px 0 80px;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.search input {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.search input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.filter-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.chip.active {
+  background: var(--accent-strong);
+  color: white;
+  border-color: var(--accent-strong);
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+.stat strong {
+  color: var(--text);
+  margin-left: 4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.badge.status-candidate { background: rgba(96, 165, 250, 0.15); color: var(--info); }
+.badge.status-review    { background: rgba(250, 204, 21, 0.15); color: var(--warn); }
+.badge.status-adopted   { background: rgba(74, 222, 128, 0.15); color: var(--good); }
+.badge.status-rejected  { background: rgba(248, 113, 113, 0.12); color: var(--bad); }
+
+.card-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.tag {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--text-dim);
+}
+
+.tag.category-classification { color: var(--info); }
+.tag.category-regression { color: var(--good); }
+.tag.category-unsupervised { color: var(--warn); }
+
+.card-problem {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-models {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.model-pill {
+  background: var(--panel-2);
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 60px 20px;
+  font-size: 14px;
+}
+
+/* Editor dialog */
+.editor {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 0;
+  width: min(720px, 92vw);
+  box-shadow: var(--shadow);
+}
+
+.editor::backdrop {
+  background: rgba(8, 12, 24, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.editor-header h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.icon-btn:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 22px;
+}
+
+.span-2 { grid-column: span 2; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.field span {
+  color: var(--text-dim);
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.editor-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+}
+
+.editor-footer .spacer {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 1; }
+  .topbar-inner { flex-direction: column; align-items: stretch; }
+  .actions { justify-content: stretch; }
+  .actions .btn { flex: 1; justify-content: center; }
+}
+
+/* ============================================
+ * Page navigation (Topics / Calendar)
+ * ============================================ */
+
+.page-nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.page-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  transition: all 0.15s ease;
+}
+
+.page-nav-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.page-nav-link.active {
+  color: white;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+/* ============================================
+ * Calendar page — schedule meta pills in topbar
+ * ============================================ */
+
+.schedule-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.meta-pill .meta-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.meta-pill strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.meta-pill.urgent strong { color: var(--warn); }
+.meta-pill.overdue strong { color: var(--bad); }
+
+/* ============================================
+ * Calendar — overall progress bar
+ * ============================================ */
+
+.overall-progress {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 10px;
+  background: var(--panel-2);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  border-radius: inherit;
+  transition: width 0.25s ease;
+}
+
+.progress-caption {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+/* ============================================
+ * Calendar — today section
+ * ============================================ */
+
+.today {
+  background: var(--panel);
+  border: 1px solid var(--accent-strong);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+
+.today-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.today-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.today-pill {
+  background: var(--accent-strong);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.today-title { flex: 1; }
+.today-owner { font-size: 12px; color: var(--text-dim); }
+
+/* ============================================
+ * Calendar — milestones
+ * ============================================ */
+
+.milestones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.milestone {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.milestone-in-progress { border-color: var(--accent); }
+.milestone-done { opacity: 0.78; }
+
+.milestone-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.milestone-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milestone-icon { font-size: 16px; line-height: 1; }
+
+.milestone-title {
+  margin: 0;
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.milestone-status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.status-pending { background: var(--panel-2); color: var(--text-dim); }
+.status-in-progress { background: rgba(96, 165, 250, 0.18); color: var(--info); }
+.status-done { background: rgba(74, 222, 128, 0.18); color: var(--good); }
+
+.milestone-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.milestone-progress {
+  height: 6px;
+}
+
+/* ============================================
+ * Calendar — task rows
+ * ============================================ */
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  transition: all 0.15s ease;
+}
+
+.task-row.done {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.task-row.done .task-title {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+.task-row.overdue {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.task-check {
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-strong);
+  cursor: pointer;
+  margin: 0;
+}
+
+.task-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-title {
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.task-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+
+.task-due {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+
+.task-due.urgent {
+  background: rgba(250, 204, 21, 0.18);
+  border-color: rgba(250, 204, 21, 0.5);
+  color: var(--warn);
+}
+
+.task-due.overdue {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: var(--bad);
+}
+
+@media (max-width: 640px) {
+  .milestones { grid-template-columns: 1fr; }
+  .schedule-meta { width: 100%; }
+  .meta-pill { flex: 1; min-width: 0; }
+  .milestone-meta { flex-direction: column; gap: 2px; }
+}
