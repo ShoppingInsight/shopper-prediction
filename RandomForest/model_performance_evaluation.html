@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="온라인 쇼핑객 Revenue 예측 모델의 전처리, 정규화, 모델 선정 이유, 튜닝 이유, 성능평가 기준 해설서">
+    <title>Random Forest 모델 성능평가 해설</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --ink: #1f2937;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --blue: #2563eb;
+            --blue-soft: #eff6ff;
+            --green: #059669;
+            --green-soft: #ecfdf5;
+            --orange: #d97706;
+            --orange-soft: #fff7ed;
+            --red: #dc2626;
+            --red-soft: #fef2f2;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+            line-height: 1.72;
+            padding: 34px 18px;
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.06);
+        }
+
+        header {
+            border-bottom: 2px solid var(--line);
+            padding-bottom: 24px;
+            margin-bottom: 28px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--blue-soft);
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        h2 {
+            font-size: 21px;
+            margin: 36px 0 14px;
+            padding-left: 11px;
+            border-left: 4px solid var(--blue);
+        }
+
+        h3 {
+            font-size: 16px;
+            margin: 18px 0 8px;
+        }
+
+        p {
+            margin: 0 0 14px;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 0.94em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 22px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid var(--line);
+            padding: 10px 12px;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+
+        .note {
+            background: var(--blue-soft);
+            border-left: 4px solid var(--blue);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin: 18px 0;
+        }
+
+        .good {
+            background: var(--green-soft);
+            border-left: 4px solid var(--green);
+        }
+
+        .warn {
+            background: var(--orange-soft);
+            border-left: 4px solid var(--orange);
+        }
+
+        .risk {
+            background: var(--red-soft);
+            border-left: 4px solid var(--red);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin: 16px 0 22px;
+        }
+
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 16px;
+            background: #ffffff;
+        }
+
+        .card-title {
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .metric {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--blue);
+            margin: 4px 0;
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .highlight-row {
+            background: #f0f9ff;
+        }
+
+        ul, ol {
+            padding-left: 22px;
+        }
+
+        li {
+            margin-bottom: 7px;
+        }
+
+        @media (max-width: 820px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12.5px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="tag">Model Performance Evaluation</div>
+        <h1>온라인 쇼핑객 Revenue 예측 모델 성능평가 해설</h1>
+        <p class="subtitle">
+            전처리, 정규화, 모델 선정 이유, 평가 지표, GridSearchCV 튜닝 이유와 최종 성능 해석을 정리한 별도 보고서
+        </p>
+    </header>
+
+    <section>
+        <h2>1. 성능평가의 목적</h2>
+        <p>
+            이번 프로젝트의 목표는 온라인 쇼핑객 세션 데이터로 구매 전환 여부(<code>Revenue</code>)를 예측하는 것입니다.
+            따라서 성능평가는 단순히 점수가 높은 모델을 고르는 과정이 아니라,
+            <strong>구매 가능성이 높은 고객을 얼마나 잘 찾아내는지</strong>와
+            <strong>그 모델을 왜 선택할 수 있는지</strong>를 설명하는 과정입니다.
+        </p>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">전체 세션</div>
+                <div class="metric">12,330</div>
+                <div class="small">온라인 쇼핑 방문 세션 수</div>
+            </div>
+            <div class="card">
+                <div class="card-title">구매 세션</div>
+                <div class="metric">1,908</div>
+                <div class="small">전체의 15.47%</div>
+            </div>
+            <div class="card">
+                <div class="card-title">평가 방식</div>
+                <div class="metric">80:20</div>
+                <div class="small">Train 9,864개 / Test 2,466개</div>
+            </div>
+        </div>
+
+        <div class="note warn">
+            <p>
+                이 데이터는 구매자가 15.47%뿐인 불균형 데이터입니다. 그래서 모델이 전부 "비구매"라고 예측해도
+                정확도는 높아 보일 수 있습니다. 성능평가에서 Accuracy만 보지 않고 Precision, Recall, F1-Score,
+                ROC-AUC를 함께 본 이유가 여기에 있습니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. 전처리 과정과 이유</h2>
+        <p>
+            머신러닝 모델은 문자, Boolean, 범주형 값을 그대로 계산하기 어렵습니다.
+            그래서 원본 CSV를 모델이 학습할 수 있는 숫자 형태로 변환했습니다.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>전처리 단계</th>
+                    <th>적용 내용</th>
+                    <th>이유</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>결측치 확인</td>
+                    <td>12,330개 행 모두 non-null</td>
+                    <td>결측치가 없어 삭제나 대체 없이 원본 데이터를 유지했습니다.</td>
+                </tr>
+                <tr>
+                    <td>Boolean 변환</td>
+                    <td><code>Weekend</code>, <code>Revenue</code>를 0/1로 변환</td>
+                    <td>모델이 True/False 값을 숫자로 계산할 수 있게 했습니다.</td>
+                </tr>
+                <tr>
+                    <td>원핫 인코딩</td>
+                    <td><code>Month</code>, <code>VisitorType</code>을 더미 변수로 변환</td>
+                    <td>순서가 없는 범주를 숫자 하나로 바꾸면 잘못된 크기 관계가 생기므로 0/1 컬럼으로 나누었습니다.</td>
+                </tr>
+                <tr>
+                    <td>타겟 분리</td>
+                    <td><code>Revenue</code>를 y, 나머지를 X로 분리</td>
+                    <td>모델이 맞혀야 하는 정답과 입력 변수를 명확히 나누었습니다.</td>
+                </tr>
+                <tr>
+                    <td>층화 분할</td>
+                    <td><code>stratify=y</code>로 Train/Test 80:20 분할</td>
+                    <td>구매/비구매 비율이 학습셋과 테스트셋에서 비슷하게 유지되도록 했습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p>
+                전처리 후 데이터는 원핫 인코딩 때문에 <strong>12,330행 x 29열</strong>로 확장되었습니다.
+                여기서 <code>Revenue</code>는 정답값이므로 입력 변수에서는 제외했고,
+                전체 변수 데이터셋은 28개 피처, <code>PageValues</code> 제외 비교용 데이터셋은 27개 피처를 사용했습니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. 정규화 과정과 이유</h2>
+        <p>
+            수치형 변수는 <code>StandardScaler</code>를 사용해 평균 0, 표준편차 1 기준으로 표준화했습니다.
+            예를 들어 <code>ProductRelated_Duration</code>은 수천 초 단위까지 커질 수 있지만,
+            <code>BounceRates</code>와 <code>ExitRates</code>는 0~1 사이의 작은 값입니다.
+            이런 차이를 그대로 두면 일부 모델에서 큰 단위의 변수가 과도하게 영향을 줄 수 있습니다.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>정규화 대상</th>
+                    <th>예시 변수</th>
+                    <th>정규화 이유</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>페이지 방문 수</td>
+                    <td><code>Administrative</code>, <code>Informational</code>, <code>ProductRelated</code></td>
+                    <td>방문 수의 범위를 맞춰 모델 비교 조건을 통일했습니다.</td>
+                </tr>
+                <tr>
+                    <td>체류 시간</td>
+                    <td><code>Administrative_Duration</code>, <code>ProductRelated_Duration</code></td>
+                    <td>초 단위 값이 다른 작은 비율 변수보다 지나치게 커지는 것을 막았습니다.</td>
+                </tr>
+                <tr>
+                    <td>비율 지표</td>
+                    <td><code>BounceRates</code>, <code>ExitRates</code>, <code>SpecialDay</code></td>
+                    <td>Logistic Regression 같은 선형 모델의 학습 안정성을 높였습니다.</td>
+                </tr>
+                <tr>
+                    <td>페이지 가치</td>
+                    <td><code>PageValues</code></td>
+                    <td>전체 변수 데이터셋에서 다른 수치형 변수와 같은 기준으로 맞췄습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note warn">
+            <p>
+                Random Forest는 트리 기반 모델이라 스케일에 비교적 덜 민감합니다.
+                그래도 같은 노트북에서 Logistic Regression, Decision Tree, Random Forest를 함께 비교했기 때문에
+                수치형 변수의 스케일을 정리해 실험 조건을 통일했습니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. 모델 선정 이유</h2>
+        <p>
+            하나의 모델만 사용하지 않고 세 가지 분류 모델을 비교했습니다.
+            이유는 기준 모델, 해석 가능한 모델, 성능이 강한 앙상블 모델을 함께 놓고 비교하기 위해서입니다.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>모델</th>
+                    <th>선정 이유</th>
+                    <th>이번 데이터에서의 역할</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Logistic Regression</td>
+                    <td>분류 문제에서 가장 기본적인 선형 기준 모델입니다.</td>
+                    <td>단순한 선형 관계만으로도 구매 여부를 어느 정도 예측할 수 있는지 확인했습니다.</td>
+                </tr>
+                <tr>
+                    <td>Decision Tree</td>
+                    <td>조건 분기 구조라 해석이 쉽습니다.</td>
+                    <td>상품 체류 시간, 이탈률 같은 변수가 어떤 규칙으로 구매 여부를 나누는지 확인하는 비교 모델입니다.</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>Random Forest</td>
+                    <td>여러 Decision Tree를 결합해 과적합을 줄이고 안정적인 성능을 냅니다.</td>
+                    <td>최종 메인 모델로 사용했습니다. 변수 간 비선형 관계와 상호작용을 잘 반영할 수 있습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note good">
+            <p>
+                최종적으로 Random Forest를 중심 모델로 본 이유는 쇼핑 행동 데이터가 단순 직선 관계로 설명되기 어렵기 때문입니다.
+                예를 들어 상품 페이지 체류 시간이 길어도 이탈률이 높으면 구매로 이어지지 않을 수 있고,
+                신규 방문자 여부와 방문 월이 함께 작용할 수도 있습니다. Random Forest는 이런 복합 조건을 여러 나무가 나누어 학습합니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>5. 성능평가 기준 선정 이유</h2>
+        <p>
+            구매자는 전체의 15.47%뿐이므로, 정확도 하나만으로 모델을 평가하면 잘못된 결론을 낼 수 있습니다.
+            그래서 아래 지표를 함께 사용했습니다.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>평가지표</th>
+                    <th>의미</th>
+                    <th>선정 이유</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Accuracy</td>
+                    <td>전체 예측 중 맞힌 비율</td>
+                    <td>전체적인 정답률을 확인하되, 불균형 데이터에서는 보조 지표로만 해석했습니다.</td>
+                </tr>
+                <tr>
+                    <td>Precision</td>
+                    <td>구매라고 예측한 세션 중 실제 구매 비율</td>
+                    <td>쿠폰이나 마케팅 비용을 낭비하지 않으려면 중요합니다.</td>
+                </tr>
+                <tr>
+                    <td>Recall</td>
+                    <td>실제 구매 세션 중 모델이 찾아낸 비율</td>
+                    <td>구매 가능 고객을 놓치지 않는 것이 중요하므로 핵심 지표로 봤습니다.</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>F1-Score</td>
+                    <td>Precision과 Recall의 조화평균</td>
+                    <td>구매 예측을 남발하지 않으면서 실제 구매자도 충분히 찾아야 하므로 튜닝 기준으로 사용했습니다.</td>
+                </tr>
+                <tr>
+                    <td>ROC-AUC</td>
+                    <td>구매/비구매를 확률 순위로 구분하는 능력</td>
+                    <td>분류 임계값 하나에만 의존하지 않고 모델의 전반적인 구분력을 확인했습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note risk">
+            <p>
+                이 데이터에서 Accuracy만 높이는 모델은 대부분의 세션을 비구매로 예측해도 높은 점수를 받을 수 있습니다.
+                그래서 "얼마나 많이 맞혔는가"보다 "실제 구매자를 얼마나 찾아냈는가"를 함께 보는 것이 더 타당합니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>6. 튜닝 이유와 GridSearchCV 설정</h2>
+        <p>
+            기본 Random Forest도 사용할 수 있지만, 트리 개수나 깊이에 따라 성능과 과적합 정도가 달라집니다.
+            그래서 <code>GridSearchCV</code>를 이용해 여러 하이퍼파라미터 조합을 비교했습니다.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>하이퍼파라미터</th>
+                    <th>후보 값</th>
+                    <th>조정 이유</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>n_estimators</code></td>
+                    <td>100, 200</td>
+                    <td>나무 개수를 늘리면 예측이 안정적이지만 계산량도 늘어납니다.</td>
+                </tr>
+                <tr>
+                    <td><code>max_depth</code></td>
+                    <td>5, 10, 15</td>
+                    <td>트리가 너무 깊으면 과적합될 수 있고, 너무 얕으면 복잡한 패턴을 못 잡습니다.</td>
+                </tr>
+                <tr>
+                    <td><code>min_samples_split</code></td>
+                    <td>2, 5</td>
+                    <td>노드를 나누는 최소 샘플 수를 조절해 지나치게 세밀한 분기를 줄입니다.</td>
+                </tr>
+                <tr>
+                    <td><code>min_samples_leaf</code></td>
+                    <td>2, 4</td>
+                    <td>마지막 잎 노드에 너무 적은 데이터만 남는 것을 막아 일반화 성능을 높입니다.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p>
+                총 24개 조합을 5-Fold 교차검증으로 평가했습니다.
+                튜닝 기준은 <code>scoring='f1'</code>로 두었습니다.
+                구매 클래스가 적은 상황에서 Precision과 Recall의 균형을 맞추는 것이 중요했기 때문입니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>7. 실제 성능평가 결과</h2>
+        <p>
+            아래 표는 테스트셋 2,466개 세션에서 계산한 실제 평가 결과입니다.
+            모든 Precision, Recall, F1-Score는 구매 클래스(<code>Revenue=True</code>)를 기준으로 해석합니다.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>데이터셋</th>
+                    <th>모델</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1</th>
+                    <th>ROC-AUC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="4">전체 변수</td>
+                    <td>Logistic Regression</td>
+                    <td>85.00%</td>
+                    <td>51.07%</td>
+                    <td>74.87%</td>
+                    <td>60.72%</td>
+                    <td>89.63%</td>
+                </tr>
+                <tr>
+                    <td>Decision Tree</td>
+                    <td>84.35%</td>
+                    <td>49.69%</td>
+                    <td>84.55%</td>
+                    <td>62.60%</td>
+                    <td>90.89%</td>
+                </tr>
+                <tr>
+                    <td>Random Forest 기본</td>
+                    <td>89.90%</td>
+                    <td>75.68%</td>
+                    <td>51.31%</td>
+                    <td>61.15%</td>
+                    <td>92.08%</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>Random Forest 최적화</td>
+                    <td>88.77%</td>
+                    <td>62.53%</td>
+                    <td>68.59%</td>
+                    <td>65.42%</td>
+                    <td>92.46%</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">PageValues 제외</td>
+                    <td>Logistic Regression</td>
+                    <td>61.52%</td>
+                    <td>24.89%</td>
+                    <td>73.56%</td>
+                    <td>37.19%</td>
+                    <td>73.18%</td>
+                </tr>
+                <tr>
+                    <td>Decision Tree</td>
+                    <td>62.65%</td>
+                    <td>25.61%</td>
+                    <td>74.08%</td>
+                    <td>38.06%</td>
+                    <td>73.76%</td>
+                </tr>
+                <tr>
+                    <td>Random Forest 기본</td>
+                    <td>84.55%</td>
+                    <td>50.62%</td>
+                    <td>10.73%</td>
+                    <td>17.71%</td>
+                    <td>74.80%</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>Random Forest 최적화</td>
+                    <td>70.44%</td>
+                    <td>29.32%</td>
+                    <td>64.40%</td>
+                    <td>40.29%</td>
+                    <td>75.90%</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>8. 결과 해석과 최종 모델 판단</h2>
+        <p>
+            전체 변수 데이터셋에서는 최적화된 Random Forest가 F1-Score 65.42%, ROC-AUC 92.46%로 가장 안정적인 성능을 보였습니다.
+            Accuracy는 기본 Random Forest가 89.90%로 더 높지만, 최적화 모델은 Recall을 51.31%에서 68.59%로 끌어올렸습니다.
+            즉 전체 정답률을 조금 양보하고 실제 구매자를 더 많이 찾아낸 것입니다.
+        </p>
+
+        <p>
+            <code>PageValues</code> 제외 데이터셋에서는 성능이 전반적으로 낮아졌지만, 최적화된 Random Forest의 Recall이 64.40%까지 상승했습니다.
+            이는 상품 페이지 체류 시간, 이탈률, 반송률 같은 행동 지표만으로도 구매 가능성이 높은 고객을 어느 정도 찾아낼 수 있음을 의미합니다.
+        </p>
+
+        <div class="note good">
+            <p>
+                최종 보고서에서는 <strong>전체 변수 Random Forest 최적화 모델</strong>을 가장 성능이 좋은 예측 모델로 제시하고,
+                <strong>PageValues 제외 Random Forest</strong>는 행동 기반 변수만으로도 구매자 탐지가 가능하다는 보조 분석으로 설명하는 구성이 가장 자연스럽습니다.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>9. 발표용 요약 문장</h2>
+        <div class="note">
+            <p>
+                본 분석은 온라인 쇼핑객 세션 데이터의 구매 전환 여부를 예측하기 위해 Logistic Regression, Decision Tree,
+                Random Forest를 비교하였다. 데이터는 구매 세션이 15.47%에 불과한 불균형 분류 문제이므로 Accuracy만으로 평가하지 않고
+                Precision, Recall, F1-Score, ROC-AUC를 함께 사용하였다. 범주형 변수는 원핫 인코딩하고, 수치형 변수는 StandardScaler로 정규화했으며,
+                Train/Test 분할에는 stratify를 적용해 구매 비율을 유지하였다. 최종적으로 Random Forest를 GridSearchCV로 튜닝한 결과,
+                전체 변수 데이터셋에서 F1-Score 65.42%, ROC-AUC 92.46%를 기록해 가장 안정적인 예측 성능을 보였다.
+                특히 F1 기준 튜닝은 단순 정확도보다 실제 구매자를 더 많이 찾아내는 방향으로 모델을 조정했다는 점에서 의미가 있다.
+            </p>
+        </div>
+    </section>
+</div>
+</body>
+</html>
