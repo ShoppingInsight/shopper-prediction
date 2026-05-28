@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="online_shoppers_analysis.ipynb 주피터 노트북 파일의 실제 학습 및 튜닝 성능 수치 해설서">
+    <meta name="description" content="online_shoppers_analysis.ipynb 주피터 노트북 파일의 CSV 데이터 분석 결과와 구매 전환 인사이트 해설서">
     <title>주피터 노트북 실제 분석 결과 해석하기 - Random Forest 집중 해설</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -334,10 +334,10 @@
 
     <section>
         <p>
-            생성된 주피터 노트북 파일은 데이터 불러오기, 전처리, Revenue 예측용 학습 데이터 구성, 3종 모델 학습, 그리고
-            <code>GridSearchCV</code> 기반 Random Forest 하이퍼파라미터 튜닝까지 정상 실행되었습니다.
-            이 문서는 단순히 점수를 나열하는 것이 아니라, <strong>CSV 데이터셋에서 어떤 패턴이 Revenue 예측에 연결되는지</strong>,
-            <strong>튜닝 후 무엇이 달라졌는지</strong>, <strong>각 지표가 어떤 의미인지</strong>를 실제 출력값 중심으로 해석한 보고서입니다.
+            생성된 주피터 노트북 파일은 온라인 쇼핑객 CSV 데이터셋을 불러와 구매 전환 여부(<code>Revenue</code>)를 분석하고,
+            방문자 유형, 방문 시점, 페이지 체류 시간, 이탈률 같은 행동 지표가 구매율과 어떻게 연결되는지 확인했습니다.
+            이 문서는 모델 점수보다 <strong>누가 더 구매하는지</strong>, <strong>구매 세션은 무엇이 다른지</strong>,
+            <strong>어떻게 구매율을 높일 수 있는지</strong>를 실제 데이터 수치 중심으로 해석한 보고서입니다.
         </p>
 
         <div class="summary-grid">
@@ -352,9 +352,9 @@
                 <p class="summary-desc">구매 1,908건, 비구매 10,422건으로 불균형 분류 문제입니다.</p>
             </div>
             <div class="summary-card">
-                <div class="summary-label">평가 데이터</div>
-                <div class="summary-value">2,466개</div>
-                <p class="summary-desc">전체의 20%를 테스트셋으로 분리했고, <code>stratify=y</code>로 구매/비구매 비율을 유지했습니다.</p>
+                <div class="summary-label">가장 높은 구매율</div>
+                <div class="summary-value">Nov 25.35%</div>
+                <p class="summary-desc">월별로는 11월, 방문자 유형별로는 신규 방문자가 구매율 24.91%로 높았습니다.</p>
             </div>
         </div>
     </section>
@@ -446,396 +446,333 @@
         </div>
     </section>
 
-    <!-- 3장: 튜닝 이유 -->
+    <!-- 3장: 구매율 세그먼트 -->
     <section>
-        <h2>3. Random Forest를 왜 파인튜닝했는가</h2>
+        <h2>3. 누가 더 구매했는가</h2>
         <p>
-            기본 Random Forest도 강력한 모델이지만, 이 데이터에서는 구매 클래스가 15.47%뿐입니다.
-            이런 불균형 데이터에서는 단순 정확도만 높이는 모델이 실제 구매자를 놓칠 수 있습니다.
-            그래서 노트북에서는 기본 모델을 그대로 제출하지 않고, <strong>구매자 탐지 성능을 끌어올리기 위해</strong> 하이퍼파라미터 튜닝을 수행했습니다.
-        </p>
-
-        <div class="analysis-block">
-            <h3>튜닝 목표를 F1-Score로 잡은 이유</h3>
-            <p>
-                <code>GridSearchCV</code>의 <code>scoring</code>은 <code>f1</code>로 설정했습니다.
-                F1-Score는 정밀도와 재현율의 조화평균이므로, 구매 예측을 너무 남발하지 않으면서도 실제 구매자를 충분히 찾아야 할 때 적합합니다.
-            </p>
-            <div class="formula">F1-Score = 2 x (Precision x Recall) / (Precision + Recall)</div>
-            <p>
-                이 선택은 특히 <code>PageValues</code>를 제외한 비교용 모델에서 중요합니다. 해당 변수를 제거하면 모델이 확신할 수 있는 신호가 줄어들기 때문에,
-                정확도만 최적화하면 대부분을 비구매로 예측하는 보수적 모델이 되기 쉽습니다.
-                F1 기준 튜닝은 구매 클래스를 더 적극적으로 탐지하도록 모델 선택 기준을 조정한 것입니다.
-            </p>
-        </div>
-
-        <div class="analysis-block">
-            <h3>탐색한 파라미터 조합</h3>
-            <p>
-                탐색 격자는 <code>n_estimators</code> 2개, <code>max_depth</code> 3개,
-                <code>min_samples_split</code> 2개, <code>min_samples_leaf</code> 2개로 구성되어 총 24개 조합입니다.
-                각 조합은 5-Fold 교차검증으로 평가되므로 전체 변수 데이터셋과 PageValues 제외 비교용 데이터셋에서 각각 120회 학습이 수행되었습니다.
-            </p>
-            <ul>
-                <li><code>n_estimators</code>: 숲을 구성하는 나무 개수입니다. 많을수록 안정적이지만 계산량이 증가합니다.</li>
-                <li><code>max_depth</code>: 각 나무가 얼마나 깊게 분기할 수 있는지 제한합니다. 깊을수록 복잡한 패턴을 잡지만 과적합 위험이 커집니다.</li>
-                <li><code>min_samples_split</code>: 노드를 추가 분할하기 위한 최소 샘플 수입니다. 값이 클수록 분기가 보수적입니다.</li>
-                <li><code>min_samples_leaf</code>: 리프 노드에 남아야 하는 최소 샘플 수입니다. 값이 클수록 너무 세밀한 규칙 생성을 막습니다.</li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- 4장: 실제 찾은 최적 파라미터 -->
-    <section>
-        <h2>4. GridSearchCV가 찾은 최적 파라미터 해석</h2>
-        <p>
-            아래 값은 노트북의 <code>GridSearchCV</code> 실행 결과에서 실제 출력된 최적 조합입니다.
-            여기서 F1-Score는 테스트셋 점수가 아니라, 훈련 데이터 내부의 5-Fold 교차검증 평균 점수입니다.
-        </p>
-
-        <div class="parameter-grid">
-            <div class="parameter-card">
-                <div class="parameter-label">전체 변수 데이터셋</div>
-                <p><strong>최적 조합</strong></p>
-                <ul>
-                    <li><code>max_depth</code>: 15</li>
-                    <li><code>min_samples_leaf</code>: 2</li>
-                    <li><code>min_samples_split</code>: 5</li>
-                    <li><code>n_estimators</code>: 200</li>
-                </ul>
-                <p><strong>교차검증 평균 F1-Score:</strong> <span class="highlight-text">0.6887</span></p>
-                <p class="small-note">
-                    <code>PageValues</code>가 강한 분리 신호를 제공하므로 더 깊은 트리와 더 많은 나무를 사용해도 검증 성능이 유지되었습니다.
-                    즉, 모델이 복잡한 규칙을 추가로 학습해도 과적합이 크게 드러나지 않은 조합입니다.
-                </p>
-            </div>
-
-            <div class="parameter-card">
-                <div class="parameter-label">PageValues 제외 비교용 데이터셋</div>
-                <p><strong>최적 조합</strong></p>
-                <ul>
-                    <li><code>max_depth</code>: 10</li>
-                    <li><code>min_samples_leaf</code>: 4</li>
-                    <li><code>min_samples_split</code>: 2</li>
-                    <li><code>n_estimators</code>: 100</li>
-                </ul>
-                <p><strong>교차검증 평균 F1-Score:</strong> <span class="highlight-text">0.4242</span></p>
-                <p class="small-note">
-                    강한 분리 신호인 <code>PageValues</code>를 제거한 뒤에는 신호가 약해졌기 때문에 트리 깊이는 10으로 낮아졌고,
-                    리프 노드 최소 샘플 수는 4로 커졌습니다. 이는 너무 작은 집단에 맞춘 예외 규칙을 줄여 일반화 성능을 확보하려는 선택입니다.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- 5장: 전체 성능 지표 -->
-    <section>
-        <h2>5. 실제 테스트셋 성능 지표 전체 해석</h2>
-        <p>
-            아래 표는 테스트셋 2,466개 세션에 대한 실제 평가 결과입니다.
-            점수는 모두 구매 클래스(<code>Revenue=True</code>)를 기준으로 계산되었습니다.
+            전체 구매율은 <strong>15.47%</strong>이지만, 모든 방문자가 같은 확률로 구매하지는 않았습니다.
+            CSV 데이터를 세그먼트별로 나누면 신규 방문자, 주말 방문자, 특정 월 방문자에서 구매율 차이가 뚜렷하게 나타납니다.
         </p>
 
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>실험군</th>
-                        <th>모델</th>
-                        <th>정확도</th>
-                        <th>정밀도</th>
-                        <th>재현율</th>
-                        <th>F1</th>
-                        <th>ROC-AUC</th>
+                        <th>구분</th>
+                        <th>세션 수</th>
+                        <th>구매 수</th>
+                        <th>구매율</th>
+                        <th>해석</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td rowspan="4"><strong>전체 변수 데이터셋</strong><br><em>PageValues 포함</em></td>
-                        <td>Logistic Regression</td>
-                        <td>85.00%</td>
-                        <td>51.07%</td>
-                        <td>74.87%</td>
-                        <td>60.72%</td>
-                        <td>89.63%</td>
+                    <tr class="highlight-row">
+                        <td>신규 방문자</td>
+                        <td>1,694</td>
+                        <td>422</td>
+                        <td>24.91%</td>
+                        <td>재방문자보다 구매 의도가 높은 세션 비중이 큽니다.</td>
                     </tr>
                     <tr>
-                        <td>Decision Tree (depth=5)</td>
-                        <td>84.35%</td>
-                        <td>49.69%</td>
-                        <td>84.55%</td>
-                        <td>62.60%</td>
-                        <td>90.89%</td>
+                        <td>재방문자</td>
+                        <td>10,551</td>
+                        <td>1,470</td>
+                        <td>13.93%</td>
+                        <td>방문 수는 많지만 구매율은 신규 방문자보다 낮습니다.</td>
                     </tr>
                     <tr>
-                        <td>Random Forest (기본)</td>
-                        <td>89.90%</td>
-                        <td>75.68%</td>
-                        <td>51.31%</td>
-                        <td>61.15%</td>
-                        <td>92.08%</td>
+                        <td>주말 방문</td>
+                        <td>2,868</td>
+                        <td>499</td>
+                        <td>17.40%</td>
+                        <td>평일 14.89%보다 높아 주말 캠페인 효율이 더 좋을 수 있습니다.</td>
                     </tr>
                     <tr class="highlight-row">
-                        <td>Random Forest (최적화)</td>
-                        <td>88.77%</td>
-                        <td>62.53%</td>
-                        <td>68.59%</td>
-                        <td>65.42%</td>
-                        <td>92.46%</td>
+                        <td>11월 방문</td>
+                        <td>2,998</td>
+                        <td>760</td>
+                        <td>25.35%</td>
+                        <td>월별 구매율과 구매 건수가 모두 가장 높습니다.</td>
                     </tr>
                     <tr>
-                        <td rowspan="4"><strong>PageValues 제외 비교용</strong><br><em>PageValues 제외</em></td>
-                        <td>Logistic Regression</td>
-                        <td>61.52%</td>
-                        <td>24.89%</td>
-                        <td>73.56%</td>
-                        <td>37.19%</td>
-                        <td>73.18%</td>
-                    </tr>
-                    <tr>
-                        <td>Decision Tree (depth=5)</td>
-                        <td>62.65%</td>
-                        <td>25.61%</td>
-                        <td>74.08%</td>
-                        <td>38.06%</td>
-                        <td>73.76%</td>
-                    </tr>
-                    <tr>
-                        <td>Random Forest (기본)</td>
-                        <td>84.55%</td>
-                        <td>50.62%</td>
-                        <td>10.73%</td>
-                        <td>17.71%</td>
-                        <td>74.80%</td>
-                    </tr>
-                    <tr class="highlight-row">
-                        <td>Random Forest (최적화)</td>
-                        <td>70.44%</td>
-                        <td>29.32%</td>
-                        <td>64.40%</td>
-                        <td>40.29%</td>
-                        <td>75.90%</td>
+                        <td>5월 방문</td>
+                        <td>3,364</td>
+                        <td>365</td>
+                        <td>10.85%</td>
+                        <td>방문량은 가장 많지만 구매율은 낮아 전환 개선 여지가 큽니다.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="analysis-block">
-            <h3>정확도(Accuracy)</h3>
+            <h3>세그먼트 해석</h3>
             <p>
-                정확도는 전체 예측 중 맞춘 비율입니다. PageValues 제외 기본 Random Forest는 정확도 84.55%로 좋아 보이지만,
-                구매자 재현율이 10.73%에 불과합니다. 즉 대부분을 비구매로 맞히면서 정확도를 확보한 모델입니다.
-                불균형 데이터에서는 정확도만 보고 모델을 선택하면 위험합니다.
-            </p>
-        </div>
-
-        <div class="analysis-block">
-            <h3>정밀도(Precision)</h3>
-            <p>
-                정밀도는 모델이 "구매할 것"이라고 예측한 세션 중 실제 구매 비율입니다.
-                PageValues 제외 최적화 모델의 정밀도는 29.32%로 낮아졌습니다. 이는 모델이 구매자를 더 많이 잡기 위해
-                구매 예측 범위를 넓혔고, 그 결과 오탐지(FP)가 늘어났기 때문입니다.
-            </p>
-        </div>
-
-        <div class="analysis-block">
-            <h3>재현율(Recall)</h3>
-            <p>
-                재현율은 실제 구매자 중 모델이 찾아낸 비율입니다. PageValues 제외 기본 Random Forest는 10.73%였지만,
-                튜닝 후 64.40%로 상승했습니다. 쇼핑몰 마케팅 관점에서는 놓친 구매 가능 고객을 줄이는 것이 중요하므로,
-                이 변화가 튜닝의 가장 큰 성과입니다.
-            </p>
-        </div>
-
-        <div class="analysis-block">
-            <h3>F1-Score와 ROC-AUC</h3>
-            <p>
-                F1-Score는 정밀도와 재현율의 균형을 보는 지표입니다. PageValues 제외 Random Forest는 튜닝 후
-                <span class="highlight-text">17.71%에서 40.29%</span>로 상승했습니다.
-                ROC-AUC는 예측 확률의 순위화 능력을 보는 지표이며, PageValues 제외 모델에서는 74.80%에서 75.90%로 소폭 개선되었습니다.
-                즉 튜닝은 확률 순위 자체를 크게 바꾸기보다, 구매로 판정하는 경계와 트리 구조를 조정해 실제 탐지율을 높인 것으로 해석할 수 있습니다.
+                방문 수만 보면 재방문자와 5월 세션이 커 보이지만, 구매율 기준으로 보면 이야기가 달라집니다.
+                신규 방문자는 구매율이 <strong>24.91%</strong>로 재방문자보다 약 11%p 높고,
+                11월은 구매율 <strong>25.35%</strong>로 전체 평균을 크게 웃돕니다.
+                따라서 "방문자가 많은 곳"과 "구매 가능성이 높은 곳"을 구분해서 봐야 합니다.
             </p>
         </div>
     </section>
 
-    <!-- 6장: 튜닝 전후 변화 -->
+    <!-- 4장: 구매 행동 차이 -->
     <section>
-        <h2>6. 튜닝 전후 핵심 변화 요약</h2>
+        <h2>4. 구매한 세션은 행동이 어떻게 달랐는가</h2>
+        <p>
+            구매 세션과 비구매 세션의 가장 큰 차이는 상품 페이지 탐색 깊이와 이탈 지표에서 나타났습니다.
+            구매자는 더 많은 상품 페이지를 보고, 더 오래 머물렀고, 반송률과 이탈률은 낮았습니다.
+        </p>
+
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>구분</th>
-                        <th>기본 RF</th>
-                        <th>최적화 RF</th>
-                        <th>변화</th>
+                        <th>지표</th>
+                        <th>비구매 평균</th>
+                        <th>구매 평균</th>
                         <th>해석</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>전체 변수 정확도</td>
-                        <td>89.90%</td>
-                        <td>88.77%</td>
-                        <td class="delta-down">-1.13%p</td>
-                        <td>전체 정답률은 소폭 낮아졌지만 구매자 탐지 균형은 개선되었습니다.</td>
+                    <tr class="highlight-row">
+                        <td>상품 페이지 수</td>
+                        <td>28.71개</td>
+                        <td>48.21개</td>
+                        <td>구매자는 상품을 더 많이 비교하고 탐색했습니다.</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>상품 페이지 체류 시간</td>
+                        <td>1,069.99초</td>
+                        <td>1,876.21초</td>
+                        <td>구매자는 상품 상세 정보에 더 오래 머물렀습니다.</td>
                     </tr>
                     <tr>
-                        <td>전체 변수 재현율</td>
-                        <td>51.31%</td>
-                        <td>68.59%</td>
-                        <td class="delta-up">+17.28%p</td>
-                        <td>구매자를 더 적극적으로 찾도록 모델 구조가 조정되었습니다.</td>
+                        <td>반송률(BounceRates)</td>
+                        <td>0.0253</td>
+                        <td>0.0051</td>
+                        <td>구매자는 첫 페이지에서 바로 나가는 비율이 낮았습니다.</td>
                     </tr>
                     <tr>
-                        <td>PageValues 제외 정확도</td>
-                        <td>84.55%</td>
-                        <td>70.44%</td>
-                        <td class="delta-down">-14.11%p</td>
-                        <td>비구매 위주의 보수적 예측을 포기하면서 전체 정확도는 내려갔습니다.</td>
+                        <td>이탈률(ExitRates)</td>
+                        <td>0.0474</td>
+                        <td>0.0196</td>
+                        <td>구매자는 세션 중간 이탈 가능성이 낮았습니다.</td>
                     </tr>
                     <tr>
-                        <td>PageValues 제외 재현율</td>
-                        <td>10.73%</td>
-                        <td>64.40%</td>
-                        <td class="delta-up">+53.67%p</td>
-                        <td>실제 구매자를 놓치는 문제가 크게 완화되었습니다.</td>
-                    </tr>
-                    <tr>
-                        <td>PageValues 제외 F1</td>
-                        <td>17.71%</td>
-                        <td>40.29%</td>
-                        <td class="delta-up">+22.58%p</td>
-                        <td>정밀도 손실보다 재현율 개선 효과가 커서 균형 성능이 향상되었습니다.</td>
+                        <td>관리/회원 관련 체류 시간</td>
+                        <td>73.74초</td>
+                        <td>119.48초</td>
+                        <td>구매자는 회원, 배송, 결제 관련 페이지도 더 확인했습니다.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="concept-card">
-            <div class="concept-card-title">튜닝 결과를 한 문장으로 해석하면</div>
+            <div class="concept-card-title">핵심 패턴</div>
             <p>
-                튜닝은 "전체 정답률이 가장 높은 모델"을 만든 것이 아니라,
-                <strong>불균형 데이터에서 구매 가능 고객을 실제로 찾아내는 모델</strong>을 만드는 방향으로 작동했습니다.
-                특히 PageValues 제외 모델에서 정확도 하락은 실패가 아니라, 구매자 탐지를 위해 의도적으로 감수한 비용으로 해석하는 것이 타당합니다.
+                구매는 단순히 방문 여부로 결정되지 않았습니다. 상품 페이지를 많이 보고 오래 머무르며,
+                이탈률이 낮은 세션일수록 구매로 이어질 가능성이 높았습니다.
+                즉 구매율을 높이려면 방문자를 많이 모으는 것만큼 <strong>상품 탐색을 깊게 만들고 중간 이탈을 줄이는 것</strong>이 중요합니다.
             </p>
         </div>
     </section>
 
-    <!-- 7장: 실제 혼동행렬 개수 -->
+    <!-- 5장: 행동 구간별 구매율 -->
     <section>
-        <h2>7. 실제 오차 행렬(Confusion Matrix) 빈도 수 분석</h2>
+        <h2>5. 어떤 행동 구간에서 구매율이 높아졌는가</h2>
         <p>
-            테스트셋의 실제 구매자는 382명, 비구매자는 2,084명입니다.
-            아래 오차 행렬은 최적화된 Random Forest가 이 2,466개 세션을 어떻게 분류했는지 보여줍니다.
+            행동 지표를 구간으로 나누면 구매율 차이가 더 직관적으로 보입니다.
+            특히 상품 체류 시간이 길고 이탈률이 낮은 세션은 평균보다 훨씬 높은 구매율을 보였습니다.
         </p>
 
-        <div class="matrix-container">
-            <div class="matrix-box">
-                <h3 style="color: var(--secondary); margin-top:0;">전체 변수 데이터셋 최적 RF</h3>
-                <p style="font-size:12px; color:#64748b;">PageValues를 포함한 전체 변수를 활용해 비구매와 구매를 비교적 안정적으로 분리했습니다.</p>
-                <div class="matrix-grid">
-                    <div class="matrix-cell cell-tn">
-                        진짜 비구매자 (TN)
-                        <span class="cell-value">1,928</span>
-                    </div>
-                    <div class="matrix-cell cell-fp">
-                        잘못된 구매 예측 (FP)
-                        <span class="cell-value">156</span>
-                    </div>
-                    <div class="matrix-cell cell-fn">
-                        놓친 구매자 (FN)
-                        <span class="cell-value">119</span>
-                    </div>
-                    <div class="matrix-cell cell-tp">
-                        맞춘 구매자 (TP)
-                        <span class="cell-value">263</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="matrix-box">
-                <h3 style="color: var(--secondary); margin-top:0;">PageValues 제외 비교용 최적 RF</h3>
-                <p style="font-size:12px; color:#64748b;">PageValues 없이도 구매자 탐지를 위해 더 넓게 구매 후보를 잡았습니다.</p>
-                <div class="matrix-grid">
-                    <div class="matrix-cell cell-tn">
-                        진짜 비구매자 (TN)
-                        <span class="cell-value">1,491</span>
-                    </div>
-                    <div class="matrix-cell cell-fp">
-                        잘못된 구매 예측 (FP)
-                        <span class="cell-value">593</span>
-                    </div>
-                    <div class="matrix-cell cell-fn">
-                        놓친 구매자 (FN)
-                        <span class="cell-value">136</span>
-                    </div>
-                    <div class="matrix-cell cell-tp">
-                        맞춘 구매자 (TP)
-                        <span class="cell-value">246</span>
-                    </div>
-                </div>
-            </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>행동 구간</th>
+                        <th>세션 수</th>
+                        <th>구매 수</th>
+                        <th>구매율</th>
+                        <th>의미</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row">
+                        <td>상품 체류 상위 25%</td>
+                        <td>3,083</td>
+                        <td>730</td>
+                        <td>23.68%</td>
+                        <td>상품을 오래 보는 고객은 구매 가능성이 높습니다.</td>
+                    </tr>
+                    <tr>
+                        <td>상품 체류 하위 50%</td>
+                        <td>6,165</td>
+                        <td>534</td>
+                        <td>8.66%</td>
+                        <td>상품 탐색이 짧으면 구매 전환이 크게 낮습니다.</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>이탈률 하위 25%</td>
+                        <td>3,179</td>
+                        <td>844</td>
+                        <td>26.55%</td>
+                        <td>이탈이 낮은 세션은 구매율이 전체 평균보다 높습니다.</td>
+                    </tr>
+                    <tr>
+                        <td>이탈률 상위 25%</td>
+                        <td>3,148</td>
+                        <td>93</td>
+                        <td>2.95%</td>
+                        <td>이탈률이 높으면 구매 전환은 거의 일어나지 않습니다.</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>상품 체류 상위 25% + 이탈률 하위 25%</td>
+                        <td>1,000</td>
+                        <td>320</td>
+                        <td>32.00%</td>
+                        <td>가장 우선적으로 잡아야 할 고전환 후보군입니다.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <div class="analysis-block">
-            <h3>오차 행렬에서 중요한 포인트</h3>
+            <h3>실제 운영 관점의 의미</h3>
             <p>
-                PageValues 제외 모델은 전체 변수 모델보다 FP가 156개에서 593개로 증가했습니다.
-                이는 쿠폰, 리마케팅, 추천 배너처럼 비용이 발생하는 마케팅 액션을 더 많은 비구매자에게도 노출할 수 있음을 의미합니다.
-                반면 실제 구매자를 맞춘 TP는 263명에서 246명으로 17명만 줄었습니다.
+                상품 체류 시간이 길고 이탈률이 낮은 1,000개 세션은 구매율이 <strong>32.00%</strong>였습니다.
+                전체 평균 15.47%의 두 배 이상입니다. 이런 세션에는 할인 쿠폰을 무작정 뿌리기보다,
+                장바구니 저장, 무료배송 조건, 재고 부족 알림처럼 결정을 밀어주는 메시지가 적합합니다.
             </p>
+        </div>
+    </section>
+
+    <!-- 6장: 구매율 개선 액션 -->
+    <section>
+        <h2>6. 구매율을 높이려면 무엇을 바꿔야 하는가</h2>
+        <p>
+            데이터에서 확인된 패턴을 바탕으로 보면 구매율 개선 방향은 크게 세 가지입니다.
+            상품 탐색을 늘리고, 이탈률을 낮추고, 구매 가능성이 높은 세그먼트에 마케팅을 집중해야 합니다.
+        </p>
+
+        <div class="grid-compare" style="margin-top: 15px;">
+            <div class="compare-box">
+                <div class="compare-box-title">상품 탐색 강화</div>
+                <p>
+                    구매자는 상품 페이지를 평균 <strong>48.21개</strong> 보고, 상품 페이지에 평균 <strong>1,876초</strong> 머물렀습니다.
+                    추천 상품, 비교 상품, 리뷰 영역을 강화해 상품 탐색 시간을 늘리는 전략이 필요합니다.
+                </p>
+            </div>
+
+            <div class="compare-box">
+                <div class="compare-box-title">이탈 구간 개선</div>
+                <p>
+                    이탈률 상위 25% 세션의 구매율은 <strong>2.95%</strong>에 불과했습니다.
+                    로딩 속도, 결제 단계, 상품 상세 페이지의 정보 부족을 점검해 이탈 원인을 줄여야 합니다.
+                </p>
+            </div>
+
+            <div class="compare-box">
+                <div class="compare-box-title">고전환 세그먼트 집중</div>
+                <p>
+                    신규 방문자 구매율은 <strong>24.91%</strong>, 11월 구매율은 <strong>25.35%</strong>였습니다.
+                    신규 방문자 온보딩 쿠폰과 11월 집중 프로모션은 평균보다 높은 효율을 기대할 수 있습니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7장: 모델 결과의 역할 -->
+    <section>
+        <h2>7. 모델 결과는 어떤 역할을 했는가</h2>
+        <p>
+            모델은 이 CSV 분석 결과를 자동으로 판별하는 도구입니다. 핵심은 파라미터 자체가 아니라,
+            여러 행동 지표를 함께 보았을 때 어떤 세션이 구매 가능성이 높은지 예측할 수 있다는 점입니다.
+        </p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>모델</th>
+                        <th>데이터 조건</th>
+                        <th>Accuracy</th>
+                        <th>Recall</th>
+                        <th>F1</th>
+                        <th>해석</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row">
+                        <td>Random Forest</td>
+                        <td>전체 변수</td>
+                        <td>88.77%</td>
+                        <td>68.59%</td>
+                        <td>65.42%</td>
+                        <td>여러 변수 조합을 활용해 가장 안정적인 예측 성능을 보였습니다.</td>
+                    </tr>
+                    <tr>
+                        <td>Random Forest</td>
+                        <td>PageValues 제외</td>
+                        <td>70.44%</td>
+                        <td>64.40%</td>
+                        <td>40.29%</td>
+                        <td>상품 체류 시간, 이탈률 등 행동 지표만으로도 구매자를 상당수 찾아냈습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="analysis-block">
+            <h3>모델 해석의 핵심</h3>
             <p>
-                따라서 PageValues 제외 최적화 모델은 완벽한 분류기는 아니지만,
-                <strong>PageValues 없이도 실제 구매자 382명 중 246명을 찾아낸 모델</strong>입니다.
-                실무적으로는 오탐 비용이 낮고 구매자 놓침 비용이 큰 캠페인에서 활용 가치가 있습니다.
+                Random Forest의 의미는 "최적 파라미터를 찾았다"가 아니라,
+                CSV에서 확인한 구매 행동 패턴을 조합해 구매 가능성이 높은 세션을 분류할 수 있다는 점입니다.
+                특히 구매자가 전체의 15.47%뿐인 데이터에서는 정확도보다 구매 고객을 얼마나 놓치지 않는지,
+                즉 Recall과 F1-Score를 함께 보는 것이 중요합니다.
             </p>
         </div>
     </section>
 
     <!-- 8장: 변수 중요도 분석 -->
     <section>
-        <h2>8. Random Forest가 선택한 실제 상위 변수</h2>
+        <h2>8. 구매 전환을 설명한 핵심 변수</h2>
         <p>
-            최종 튜닝 모델의 변수 중요도는 모델이 어떤 정보를 기준으로 구매 여부를 구별했는지 보여줍니다.
-            전체 변수 모델과 PageValues 제외 모델의 차이는 CSV 데이터셋 안에서 어떤 신호가 강하고,
-            어떤 행동 지표가 PageValues 없이도 Revenue 예측에 기여하는지 보여줍니다.
+            Random Forest의 변수 중요도도 앞의 CSV 분석과 같은 방향을 가리킵니다.
+            구매 전환은 상품 탐색 깊이, 체류 시간, 이탈률, 반송률과 강하게 연결되어 있었습니다.
         </p>
 
         <div class="grid-compare" style="margin-top: 15px;">
             <div class="compare-box">
-                <div class="compare-box-title">전체 변수 데이터셋</div>
+                <div class="compare-box-title">전체 변수 기준</div>
                 <ol>
-                    <li><span class="highlight-text">PageValues (평균 페이지 가치) 약 52.4%</span></li>
-                    <li>ProductRelated_Duration (상품 체류 시간) 약 8.2%</li>
-                    <li>ExitRates (이탈률) 약 6.5%</li>
-                    <li>ProductRelated (상품 페이지 뷰 수) 약 5.8%</li>
-                    <li>BounceRates (반송률) 약 4.4%</li>
+                    <li><span class="highlight-text">PageValues 약 52.4%</span></li>
+                    <li>ProductRelated_Duration 약 8.2%</li>
+                    <li>ExitRates 약 6.5%</li>
+                    <li>ProductRelated 약 5.8%</li>
+                    <li>BounceRates 약 4.4%</li>
                 </ol>
             </div>
 
             <div class="compare-box">
-                <div class="compare-box-title">PageValues 제외 비교용</div>
+                <div class="compare-box-title">행동 지표 중심</div>
                 <ol>
-                    <li><span class="highlight-text">ProductRelated_Duration (상품 체류 시간) 약 17.5%</span></li>
-                    <li>ExitRates (이탈률) 약 15.2%</li>
-                    <li>ProductRelated (상품 페이지 뷰 수) 약 11.4%</li>
-                    <li>BounceRates (반송률) 약 9.8%</li>
-                    <li>Administrative_Duration (행정 체류 시간) 약 8.1%</li>
+                    <li><span class="highlight-text">ProductRelated_Duration 약 17.5%</span></li>
+                    <li>ExitRates 약 15.2%</li>
+                    <li>ProductRelated 약 11.4%</li>
+                    <li>BounceRates 약 9.8%</li>
+                    <li>Administrative_Duration 약 8.1%</li>
                 </ol>
             </div>
         </div>
 
         <div class="concept-card">
-            <div class="concept-card-title">변수 중요도 해석</div>
+            <div class="concept-card-title">결론적으로 중요한 행동</div>
             <p>
-                전체 변수 모델에서는 <code>PageValues</code> 하나가 중요도의 절반 이상을 차지합니다.
-                이는 해당 변수가 CSV 데이터셋 안에서 구매 전환을 설명하는 매우 강력한 신호라는 뜻입니다.
-                반면 PageValues 제외 모델에서는 상품 페이지 체류 시간, 이탈률, 상품 페이지 수, 반송률 등 방문 중 관측 가능한 행동 지표들이 중요도로 분산됩니다.
-            </p>
-            <p>
-                따라서 최종 보고서에서는 전체 변수 모델을 "데이터셋 전체를 활용한 Revenue 예측 결과"로,
-                PageValues 제외 모델을 "강한 단일 변수 의존도를 낮췄을 때 남는 행동 기반 예측력"으로 제시하는 것이 가장 자연스럽습니다.
+                구매율을 높이려면 상품 페이지 체류 시간을 늘리고, 상품 페이지 간 이동을 자연스럽게 만들고,
+                이탈률과 반송률이 높은 페이지를 줄이는 것이 우선입니다.
+                모델 결과는 이 방향이 단순 추측이 아니라 실제 CSV 데이터와 예측 모델 양쪽에서 확인된 패턴임을 뒷받침합니다.
             </p>
         </div>
     </section>
@@ -844,33 +781,32 @@
     <section>
         <h2>9. 최종 결론 및 제출용 해석</h2>
         <p>
-            이 분석에서 가장 중요한 결론은 <strong>온라인 쇼핑객 세션 데이터로 Revenue를 예측할 수 있으며,
-            Random Forest가 변수 간 비선형 관계를 가장 효과적으로 반영했다는 것</strong>입니다.
-            <code>PageValues</code>를 포함한 전체 변수 모델은 ROC-AUC 92.46%, F1 65.42%로 가장 높은 수준의 성능을 보였습니다.
+            이 분석에서 가장 중요한 결론은 <strong>구매 전환은 방문량 자체보다 방문자의 행동 깊이와 이탈 여부에 더 강하게 연결되어 있다는 것</strong>입니다.
+            신규 방문자, 11월 방문자, 상품 페이지를 오래 탐색한 방문자, 이탈률이 낮은 방문자에서 구매율이 높게 나타났습니다.
         </p>
         <p>
-            PageValues 제외 비교용 모델은 정확도 70.44%, F1 40.29%로 수치상 낮아 보이지만,
-            <code>PageValues</code> 없이도 구매자 재현율을 64.40%까지 확보했습니다.
-            이는 상품 페이지 체류 시간, 이탈률, 상품 페이지 수, 반송률 같은 행동 지표만으로도
-            구매 가능 고객을 어느 정도 구분할 수 있음을 보여줍니다.
+            따라서 구매율을 높이기 위한 핵심 전략은 세 가지입니다.
+            첫째, 상품 추천과 리뷰/비교 정보를 강화해 상품 페이지 체류 시간을 늘립니다.
+            둘째, 이탈률이 높은 페이지의 로딩 속도, 정보 구성, 결제 흐름을 개선합니다.
+            셋째, 신규 방문자와 11월처럼 구매율이 높은 세그먼트에 프로모션을 집중합니다.
         </p>
 
         <div class="analysis-block">
             <h3>보고서에 쓸 수 있는 요약 문장</h3>
             <p>
                 본 프로젝트는 온라인 쇼핑객 방문 세션 CSV 데이터셋을 활용하여 구매 전환 여부(<code>Revenue</code>)를 예측하는 것을 목표로 하였다.
-                EDA를 통해 구매 클래스 불균형과 주요 행동 변수의 분포를 확인했고, Logistic Regression, Decision Tree, Random Forest를 비교한 결과
-                Random Forest가 가장 안정적인 예측 성능을 보였다. 또한 <code>PageValues</code> 포함 모델과 제외 모델을 함께 분석하여
-                해당 변수가 강력한 구매 전환 신호임을 확인했으며, PageValues를 제외한 상태에서도 Random Forest를 F1 기준으로 튜닝한 결과
-                기본 모델 대비 재현율이 10.73%에서 64.40%로 크게 향상되었다.
-                최종적으로 본 분석은 단순 정확도보다 Precision, Recall, F1-Score, ROC-AUC를 함께 고려해야 하는 불균형 Revenue 예측 문제임을 보여준다.
+                EDA 결과 신규 방문자의 구매율은 24.91%로 재방문자보다 높았고, 월별로는 11월 구매율이 25.35%로 가장 높았다.
+                또한 구매 세션은 비구매 세션보다 상품 페이지 수와 체류 시간이 높고 반송률 및 이탈률은 낮았다.
+                특히 상품 체류 상위 25%이면서 이탈률 하위 25%인 세션은 구매율이 32.00%로 전체 평균 15.47%보다 크게 높았다.
+                Random Forest 모델은 이러한 행동 지표를 조합해 구매 가능성이 높은 세션을 예측하는 데 활용되었으며,
+                최종적으로 구매율 개선을 위해 상품 탐색 강화, 이탈 페이지 개선, 고전환 세그먼트 집중 마케팅이 필요하다는 결론을 도출하였다.
             </p>
         </div>
     </section>
 
     <footer style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 15px; font-size: 11px; text-align: center; color: #94a3b8;">
-        본 해설서는 2026년 5월 27일 14:06에 성공적으로 전체 학습 연산을 완료한 online_shoppers_analysis.ipynb 파일의 실제 연산 스코어를 근거로 작성되었습니다.<br>
-        실제 노트북 수치 데이터가 완전히 매칭되어 있으므로 주피터 셀의 출력과 함께 확인하시어 텀프로젝트 최종 제출물 검토에 활용하시기 바랍니다.
+        본 해설서는 online_shoppers_analysis.ipynb 파일의 실제 CSV 분석 결과와 모델 평가 수치를 바탕으로 작성되었습니다.<br>
+        주피터 셀의 출력과 함께 확인하여 텀프로젝트 최종 제출물 검토에 활용하시기 바랍니다.
     </footer>
 </div>
 
