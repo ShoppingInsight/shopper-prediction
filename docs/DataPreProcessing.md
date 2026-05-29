@@ -2,7 +2,7 @@
 
 > **한 줄 요약**: `online_shoppers_intention.csv`를 **공통 전처리(로드→결측치→타깃→split) → 모델별 분기(KNN / Tree)** 의 2단 구조로 처리한다. KNN은 거리, Tree는 분할로 데이터를 보기 때문에 같은 데이터에 다른 전처리를 적용해야 공정 비교가 된다.
 
-실행 노트북: [`preprocessing.ipynb`](./preprocessing.ipynb)
+실행 노트북: [`notebooks/preprocessing.ipynb`](../notebooks/preprocessing.ipynb)
 
 ---
 
@@ -23,7 +23,7 @@
 세 모델이 같은 train/test 쌍을 공유하도록 split까지만 공통으로 수행. fit이 필요한 변환은 분기 이후에 두어 누수 방지.
 
 ```python
-df = pd.read_csv('online_shoppers_intention.csv')
+df = pd.read_csv('../data/online_shoppers_intention.csv')
 df.isnull().sum().sum()        # 0
 y = df['Revenue'].astype(int)
 X = df.drop(columns=['Revenue'])
@@ -155,4 +155,3 @@ keep = imp[imp >= 0.005].index
 | 불균형 | SMOTE (train만) | `class_weight='balanced'` + 임계값 |
 | PageValues | 제거 (누수) | 제거 (동일 판단) |
 | 최종 컬럼 수 | 11 | ~31 |
-

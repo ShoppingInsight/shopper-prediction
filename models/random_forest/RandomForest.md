@@ -1,6 +1,6 @@
 # 온라인 쇼핑객 Revenue 예측 - Random Forest 분석 자료
 
-> **한 줄 요약**: `online_shoppers_intention.csv` 데이터셋의 방문 행동 정보를 활용해 구매 전환 여부(`Revenue`)를 예측하고, Logistic Regression, Decision Tree, Random Forest를 비교한 뒤 Random Forest를 중심으로 성능과 변수 중요도를 해석했다.
+> **한 줄 요약**: `data/online_shoppers_intention.csv` 데이터셋의 방문 행동 정보를 활용해 구매 전환 여부(`Revenue`)를 예측하고, Logistic Regression, Decision Tree, Random Forest를 비교한 뒤 Random Forest를 중심으로 성능과 변수 중요도를 해석했다.
 
 ## 폴더 구성
 
@@ -23,7 +23,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 데이터 파일 | `online_shoppers_intention.csv` |
+| 데이터 파일 | `data/online_shoppers_intention.csv` |
 | 데이터 수 | 12,330개 방문 세션 |
 | 원본 컬럼 수 | 18개 |
 | 타겟 변수 | `Revenue` |
@@ -74,16 +74,16 @@
 
 ## 실행 방법
 
-저장소 루트에 있는 `online_shoppers_intention.csv`를 기준으로 실행한다.
+저장소 루트의 `data/online_shoppers_intention.csv`를 기준으로 실행한다.
 
 ```bash
 pip install -r requirements.txt
-jupyter notebook RandomForest/RandomForest.ipynb
+jupyter notebook models/random_forest/RandomForest.ipynb
 ```
 
 노트북을 다시 생성하려면 다음 명령을 실행한다.
 
 ```bash
-cd RandomForest
+cd models/random_forest
 python generate_notebook.py
 ```

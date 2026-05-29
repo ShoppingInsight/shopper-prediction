@@ -315,7 +315,7 @@
 <body>
   <div class="page">
     <header>
-      <p class="eyebrow">DataPreProcessing.md + preprocessing.ipynb 정리본</p>
+      <p class="eyebrow">docs/DataPreProcessing.md + notebooks/preprocessing.ipynb 정리본</p>
       <h1>온라인 쇼핑 세션 데이터 전처리</h1>
       <p class="lead">
         이 문서는 <code>online_shoppers_intention.csv</code>를 모델 학습 전에 어떻게 가공하는지 설명한다.
@@ -387,7 +387,7 @@
           <tbody>
             <tr>
               <td>로드</td>
-              <td><code>pd.read_csv('online_shoppers_intention.csv')</code></td>
+              <td><code>pd.read_csv('../data/online_shoppers_intention.csv')</code></td>
               <td>원본 데이터를 한 번만 읽고 이후 모델별 복사본을 만든다.</td>
             </tr>
             <tr>
@@ -759,7 +759,7 @@ X_te_tree = X_te_tree.reindex(columns=X_tr_tree.columns, fill_value=0)</pre>
     </main>
 
     <footer>
-      Source: <code>DataPreProcessing.md</code>, <code>preprocessing.ipynb</code>
+      Source: <code>docs/DataPreProcessing.md</code>, <code>notebooks/preprocessing.ipynb</code>
     </footer>
   </div>
 </body>

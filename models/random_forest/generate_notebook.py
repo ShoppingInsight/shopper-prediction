@@ -37,6 +37,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
+from pathlib import Path
 
 # 경고 무시 및 시각화 기본 한글 설정
 warnings.filterwarnings('ignore')
@@ -46,11 +47,13 @@ plt.rcParams['axes.unicode_minus'] = False
 # 데이터 로드
 csv_candidates = [
     Path('online_shoppers_intention.csv'),
-    Path('..') / 'online_shoppers_intention.csv'
+    Path('data') / 'online_shoppers_intention.csv',
+    Path('..') / 'data' / 'online_shoppers_intention.csv',
+    Path('..') / '..' / 'data' / 'online_shoppers_intention.csv',
 ]
 csv_path = next((path for path in csv_candidates if path.exists()), None)
 if csv_path is None:
-    raise FileNotFoundError('online_shoppers_intention.csv 파일을 현재 폴더 또는 상위 폴더에서 찾을 수 없습니다.')
+    raise FileNotFoundError('data/online_shoppers_intention.csv 파일을 저장소 루트 기준으로 찾을 수 없습니다.')
 
 df = pd.read_csv(csv_path)
 print(f"데이터셋 형태: {df.shape}")

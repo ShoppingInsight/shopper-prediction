@@ -17,7 +17,7 @@
 
 ### 발표 중 같이 열어볼 노트북
 
-발표할 때는 [purchase_proba.ipynb](/E:/shopper-prediction/KNN/purchase_proba.ipynb)를 함께 열어두고, 아래 순서대로 출력 결과를 보여주면 된다. 사용자가 말한 `shopping_proba.ipynb`에 해당하는 파일은 현재 디렉토리 기준으로 `purchase_proba.ipynb`다.
+발표할 때는 [`purchase_proba.ipynb`](./purchase_proba.ipynb)를 함께 열어두고, 아래 순서대로 출력 결과를 보여주면 된다. 사용자가 말한 `shopping_proba.ipynb`에 해당하는 파일은 현재 디렉토리 기준으로 `purchase_proba.ipynb`다.
 
 | 발표 구간 | 노트북에서 볼 부분 | 보여줄 핵심 출력 |
 |---|---|---|
@@ -45,7 +45,7 @@
 
 ## 2. 데이터 소개
 
-사용한 데이터는 UCI의 `online_shoppers_intention.csv`다.
+사용한 데이터는 UCI의 `data/online_shoppers_intention.csv`다.
 
 | 항목 | 내용 |
 |---|---|

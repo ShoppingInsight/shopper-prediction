@@ -55,7 +55,19 @@ Python 3.12가 없다면 [python.org](https://www.python.org/downloads/release/p
 
 ### 알고리즘 설명 자료
 
-- 문서형 정리: [`ALGORITHMS.md`](ALGORITHMS.md)
+- 문서형 정리: [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md)
+
+---
+
+## 디렉토리 구조
+
+| 경로 | 설명 |
+|---|---|
+| `data/` | 원본 온라인 쇼핑 세션 CSV 데이터셋 |
+| `docs/` | 알고리즘, 전처리, 수업 참고 자료 문서 |
+| `models/knn/` | KNN 구매 확률 예측 노트북과 발표 자료 |
+| `models/random_forest/` | Random Forest 분석 노트북과 발표 자료 |
+| `notebooks/` | 모델 공통 전처리 실행 노트북 |
 
 ---
 
