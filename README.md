@@ -67,6 +67,7 @@ Python 3.12가 없다면 [python.org](https://www.python.org/downloads/release/p
 | `docs/` | 알고리즘, 전처리, 수업 참고 자료 문서 |
 | `models/knn/` | KNN 구매 확률 예측 노트북과 발표 자료 |
 | `models/random_forest/` | Random Forest 분석 노트북과 발표 자료 |
+| `models/clustering/` | K-Means 행동 기반 방문자 세분화(비지도) 노트북 |
 | `notebooks/` | 모델 공통 전처리 실행 노트북 |
 
 ---
