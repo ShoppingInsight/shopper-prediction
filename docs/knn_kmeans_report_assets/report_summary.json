@@ -1,0 +1,430 @@
+{
+  "data": {
+    "original_rows": 12330,
+    "processed_rows": 12205,
+    "features": 11,
+    "purchase_rate": 0.15632937320770177,
+    "train_rows": 9764,
+    "test_rows": 2441,
+    "train_purchase_rate": 0.15628840639082342,
+    "test_purchase_rate": 0.15649324047521507,
+    "columns": [
+      "Administrative",
+      "Administrative_Duration",
+      "Informational",
+      "Informational_Duration",
+      "ProductRelated",
+      "ProductRelated_Duration",
+      "BounceRates",
+      "ExitRates",
+      "SpecialDay",
+      "Weekend",
+      "is_new_visitor"
+    ]
+  },
+  "knn": {
+    "selected": {
+      "K": 151,
+      "weights": "distance",
+      "p": 1,
+      "distance": "Manhattan"
+    },
+    "metrics": [
+      {
+        "model": "Raw KNN",
+        "ROC_AUC": 0.6173083817946494,
+        "PR_AUC": 0.20843943556907624,
+        "Brier": 0.1438263006964359,
+        "Precision": 0.30158730158730157,
+        "Recall": 0.09947643979057591,
+        "F1": 0.14960629921259844
+      },
+      {
+        "model": "Pipeline KNN",
+        "ROC_AUC": 0.7284009164210756,
+        "PR_AUC": 0.2987911863189552,
+        "Brier": 0.23517418428130432,
+        "Precision": 0.24268104776579352,
+        "Recall": 0.824607329842932,
+        "F1": 0.375
+      }
+    ],
+    "deciles": [
+      {
+        "score_decile": 1,
+        "count": 245,
+        "mean_predicted_proba": 0.009342939845993492,
+        "actual_purchase_rate": 0.012244897959183673,
+        "actual_buyers": 3
+      },
+      {
+        "score_decile": 2,
+        "count": 244,
+        "mean_predicted_proba": 0.09166531001016487,
+        "actual_purchase_rate": 0.020491803278688523,
+        "actual_buyers": 5
+      },
+      {
+        "score_decile": 3,
+        "count": 244,
+        "mean_predicted_proba": 0.24747536852612942,
+        "actual_purchase_rate": 0.045081967213114756,
+        "actual_buyers": 11
+      },
+      {
+        "score_decile": 4,
+        "count": 244,
+        "mean_predicted_proba": 0.39816858528515536,
+        "actual_purchase_rate": 0.08196721311475409,
+        "actual_buyers": 20
+      },
+      {
+        "score_decile": 5,
+        "count": 244,
+        "mean_predicted_proba": 0.48795829004391195,
+        "actual_purchase_rate": 0.18032786885245902,
+        "actual_buyers": 44
+      },
+      {
+        "score_decile": 6,
+        "count": 244,
+        "mean_predicted_proba": 0.5574092186149019,
+        "actual_purchase_rate": 0.14344262295081966,
+        "actual_buyers": 35
+      },
+      {
+        "score_decile": 7,
+        "count": 244,
+        "mean_predicted_proba": 0.6161041473783352,
+        "actual_purchase_rate": 0.23770491803278687,
+        "actual_buyers": 58
+      },
+      {
+        "score_decile": 8,
+        "count": 244,
+        "mean_predicted_proba": 0.6660544279524228,
+        "actual_purchase_rate": 0.26229508196721313,
+        "actual_buyers": 64
+      },
+      {
+        "score_decile": 9,
+        "count": 244,
+        "mean_predicted_proba": 0.7159963554840915,
+        "actual_purchase_rate": 0.27049180327868855,
+        "actual_buyers": 66
+      },
+      {
+        "score_decile": 10,
+        "count": 244,
+        "mean_predicted_proba": 0.7891694895499571,
+        "actual_purchase_rate": 0.3114754098360656,
+        "actual_buyers": 76
+      }
+    ],
+    "top_bottom_profile": [
+      {
+        "feature": "ProductRelated_Duration",
+        "top_10pct_mean": 2827.7801862676233,
+        "bottom_10pct_mean": 66.73409135089796,
+        "difference": 2761.0460949167255,
+        "abs_difference": 2761.0460949167255
+      },
+      {
+        "feature": "Administrative_Duration",
+        "top_10pct_mean": 162.65413021659833,
+        "bottom_10pct_mean": 0.08163265306122448,
+        "difference": 162.5724975635371,
+        "abs_difference": 162.5724975635371
+      },
+      {
+        "feature": "Informational_Duration",
+        "top_10pct_mean": 84.1221194382787,
+        "bottom_10pct_mean": 0.09387755102040816,
+        "difference": 84.02824188725829,
+        "abs_difference": 84.02824188725829
+      },
+      {
+        "feature": "ProductRelated",
+        "top_10pct_mean": 71.75819672131148,
+        "bottom_10pct_mean": 3.975510204081633,
+        "difference": 67.78268651722985,
+        "abs_difference": 67.78268651722985
+      },
+      {
+        "feature": "Administrative",
+        "top_10pct_mean": 4.135245901639344,
+        "bottom_10pct_mean": 0.00816326530612245,
+        "difference": 4.127082636333221,
+        "abs_difference": 4.127082636333221
+      },
+      {
+        "feature": "Informational",
+        "top_10pct_mean": 1.139344262295082,
+        "bottom_10pct_mean": 0.02040816326530612,
+        "difference": 1.1189360990297759,
+        "abs_difference": 1.1189360990297759
+      },
+      {
+        "feature": "is_new_visitor",
+        "top_10pct_mean": 0.35655737704918034,
+        "bottom_10pct_mean": 0.0163265306122449,
+        "difference": 0.34023084643693546,
+        "abs_difference": 0.34023084643693546
+      },
+      {
+        "feature": "SpecialDay",
+        "top_10pct_mean": 0.011475409836065573,
+        "bottom_10pct_mean": 0.16408163265306125,
+        "difference": -0.15260622281699568,
+        "abs_difference": 0.15260622281699568
+      },
+      {
+        "feature": "ExitRates",
+        "top_10pct_mean": 0.014575159192622951,
+        "bottom_10pct_mean": 0.14658238313877553,
+        "difference": -0.13200722394615258,
+        "abs_difference": 0.13200722394615258
+      },
+      {
+        "feature": "Weekend",
+        "top_10pct_mean": 0.2581967213114754,
+        "bottom_10pct_mean": 0.14285714285714285,
+        "difference": 0.11533957845433257,
+        "abs_difference": 0.11533957845433257
+      },
+      {
+        "feature": "BounceRates",
+        "top_10pct_mean": 0.0032912412909836073,
+        "bottom_10pct_mean": 0.1175045012,
+        "difference": -0.11421325990901639,
+        "abs_difference": 0.11421325990901639
+      }
+    ],
+    "permutation_importance": [
+      {
+        "feature": "is_new_visitor",
+        "importance_mean": 0.026568752346782094,
+        "importance_std": 0.0016643251314300343
+      },
+      {
+        "feature": "ProductRelated_Duration",
+        "importance_mean": 0.017517695690905333,
+        "importance_std": 0.008704519989406695
+      },
+      {
+        "feature": "ExitRates",
+        "importance_mean": 0.016599748941987864,
+        "importance_std": 0.0032643921151674347
+      },
+      {
+        "feature": "ProductRelated",
+        "importance_mean": 0.012557562380965726,
+        "importance_std": 0.0035241931415862255
+      },
+      {
+        "feature": "SpecialDay",
+        "importance_mean": 0.0023597079861367165,
+        "importance_std": 0.00474416530300755
+      },
+      {
+        "feature": "BounceRates",
+        "importance_mean": 0.0020403760954121886,
+        "importance_std": 0.0045289103303985685
+      },
+      {
+        "feature": "Administrative_Duration",
+        "importance_mean": 0.0011764636080308088,
+        "importance_std": 0.0028684457626602924
+      },
+      {
+        "feature": "Administrative",
+        "importance_mean": -5.4246160600753455e-05,
+        "importance_std": 0.0042786214217147445
+      },
+      {
+        "feature": "Informational_Duration",
+        "importance_mean": -0.008163199574167704,
+        "importance_std": 0.0019826365415517673
+      },
+      {
+        "feature": "Weekend",
+        "importance_mean": -0.008355603925048749,
+        "importance_std": 0.0039478934163409436
+      },
+      {
+        "feature": "Informational",
+        "importance_mean": -0.010108856787593323,
+        "importance_std": 0.002186176608114506
+      }
+    ],
+    "prediction_summary": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.4577506396216573,
+      "actual_rate": 0.15649324047521507
+    }
+  },
+  "kmeans": {
+    "selected_K": 3,
+    "sweep": [
+      {
+        "K": 2,
+        "inertia": 102581.60960194639,
+        "silhouette": 0.23279860823845172
+      },
+      {
+        "K": 3,
+        "inertia": 80645.59980467183,
+        "silhouette": 0.3225413491514878
+      },
+      {
+        "K": 4,
+        "inertia": 65272.115917309595,
+        "silhouette": 0.27527198845811574
+      },
+      {
+        "K": 5,
+        "inertia": 56185.6057139685,
+        "silhouette": 0.2993014065798219
+      },
+      {
+        "K": 6,
+        "inertia": 48222.50878068326,
+        "silhouette": 0.3217907353701744
+      },
+      {
+        "K": 7,
+        "inertia": 43893.802013882734,
+        "silhouette": 0.3273522451287306
+      },
+      {
+        "K": 8,
+        "inertia": 40877.32243458545,
+        "silhouette": 0.2943921220195658
+      },
+      {
+        "K": 9,
+        "inertia": 38527.43364034868,
+        "silhouette": 0.29137297682835345
+      },
+      {
+        "K": 10,
+        "inertia": 36418.71730778093,
+        "silhouette": 0.3118480118115028
+      }
+    ],
+    "profile": [
+      {
+        "cluster": 0,
+        "size": 8988,
+        "purchase_rate": 0.15020026702269693,
+        "ProductRelated": 26.304517133956388,
+        "ProductRelated_Duration": 964.4780846197222,
+        "Administrative": 1.855807743658211,
+        "BounceRates": 0.009396348493101912,
+        "ExitRates": 0.032673653645304855,
+        "is_new_visitor": 0.1588785046728972,
+        "Weekend": 0.22897196261682243,
+        "size_pct": 0.736419500204834,
+        "segment": "Browsers"
+      },
+      {
+        "cluster": 1,
+        "size": 2313,
+        "purchase_rate": 0.2395157803718115,
+        "ProductRelated": 65.82230869001297,
+        "ProductRelated_Duration": 2604.715132289901,
+        "Administrative": 5.113272805879809,
+        "BounceRates": 0.00740129053696498,
+        "ExitRates": 0.021899214315607436,
+        "is_new_visitor": 0.10159965412883701,
+        "Weekend": 0.27496757457846954,
+        "size_pct": 0.1895124948791479,
+        "segment": "Engaged"
+      },
+      {
+        "cluster": 2,
+        "size": 904,
+        "purchase_rate": 0.004424778761061947,
+        "ProductRelated": 2.704646017699115,
+        "ProductRelated_Duration": 41.798414454679204,
+        "Administrative": 0.04314159292035398,
+        "BounceRates": 0.162661676920354,
+        "ExitRates": 0.17894238361172565,
+        "is_new_visitor": 0.033185840707964605,
+        "Weekend": 0.18252212389380532,
+        "size_pct": 0.07406800491601803,
+        "segment": "Bouncers"
+      }
+    ],
+    "label_map": {
+      "2": "Bouncers",
+      "0": "Browsers",
+      "1": "Engaged"
+    },
+    "pca_explained_variance": [
+      0.38224588208000837,
+      0.15818098062838354
+    ],
+    "internal_metrics": {
+      "silhouette": 0.31877636062540027,
+      "davies_bouldin": 1.1611029135890594,
+      "calinski_harabasz": 4055.6577343820322,
+      "inertia": 80645.59980467183,
+      "silhouette_by_cluster": [
+        {
+          "cluster": 0,
+          "mean": 0.30399485300821855,
+          "size": 8988
+        },
+        {
+          "cluster": 1,
+          "mean": 0.30546738819126457,
+          "size": 2313
+        },
+        {
+          "cluster": 2,
+          "mean": 0.4997938868459588,
+          "size": 904
+        }
+      ]
+    },
+    "external_metrics": {
+      "ari_vs_revenue": 0.010380884592398066,
+      "nmi_vs_revenue": 0.026655948032745024
+    },
+    "stability": {
+      "seed_ari_mean": 1.0,
+      "seed_ari_min": 1.0,
+      "bootstrap_ari_mean": 0.997497702083202,
+      "bootstrap_ari_min": 0.9940469919369281
+    },
+    "generalization": {
+      "train_silhouette": 0.31925466779096784,
+      "test_silhouette": 0.31897506555681243,
+      "segments": [
+        {
+          "segment": "Bouncers",
+          "train_purchase_rate": 0.004329004329004329,
+          "test_purchase_rate": 0.0043859649122807015,
+          "train_share": 0.07571288102261553,
+          "test_share": 0.07470511140235911
+        },
+        {
+          "segment": "Browsers",
+          "train_purchase_rate": 0.14857058213597985,
+          "test_purchase_rate": 0.1579183490354419,
+          "train_share": 0.7375723806402272,
+          "test_share": 0.7303407601572739
+        },
+        {
+          "segment": "Engaged",
+          "train_purchase_rate": 0.248683440608543,
+          "test_purchase_rate": 0.20840336134453782,
+          "train_share": 0.1867147383371572,
+          "test_share": 0.19495412844036697
+        }
+      ]
+    }
+  }
+}
