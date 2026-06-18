@@ -462,23 +462,23 @@ th {
             <div class="summary-grid">
                 <article class="metric">
                     <span class="metric-label">Best Raw Test F1</span>
-                    <strong>0.4311</strong>
+                    <strong>0.4403</strong>
                     <span class="metric-note">RF + KMeans one-hot</span>
                 </article>
                 <article class="metric">
                     <span class="metric-label">Purchase Recall</span>
-                    <strong>0.6387</strong>
+                    <strong>0.6859</strong>
                     <span class="metric-note">RF + KMeans one-hot</span>
                 </article>
                 <article class="metric">
                     <span class="metric-label">Best Precision</span>
-                    <strong>0.4534</strong>
-                    <span class="metric-note">Precision 튜닝 모델</span>
+                    <strong>0.4026</strong>
+                    <span class="metric-note">Random Forest default</span>
                 </article>
                 <article class="metric">
                     <span class="metric-label">Best PR-AUC</span>
-                    <strong>0.3635</strong>
-                    <span class="metric-note">불균형 기준</span>
+                    <strong>0.3726</strong>
+                    <span class="metric-note">F1 튜닝 RF</span>
                 </article>
             </div>
             <div class="callout">
@@ -489,10 +489,10 @@ th {
             <div class="explain-box">
                 <h3>결론부터 읽으면</h3>
                 <p>
-                    기존 F1-tuned Random Forest에 K-Means cluster label을 one-hot feature로 추가했을 때 F1은 <strong>0.4298에서 0.4311</strong>, Recall은 <strong>0.6335에서 0.6387</strong>, PR-AUC는 <strong>0.3578에서 0.3623</strong>으로 소폭 개선됐다. 즉, 군집 정보는 큰 성능 향상까지는 아니지만 구매자를 조금 더 잘 잡는 보조 신호로 작동했다.
+                    <code>models/clustering/csv/X_train_knn.csv</code>로만 K-Means를 fit하고 cluster label을 one-hot feature로 추가했을 때 F1은 <strong>0.4348에서 0.4403</strong>, Recall은 <strong>0.6675에서 0.6859</strong>, ROC-AUC는 <strong>0.7871에서 0.7897</strong>로 소폭 개선됐다. 즉, 군집 정보는 큰 성능 향상까지는 아니지만 행동 유형을 요약하는 보조 신호로 작동했다.
                 </p>
                 <p>
-                    반대로 cluster 중심까지의 거리 3개를 추가한 모델은 거리 feature 중요도는 높게 잡혔지만 F1과 Recall이 떨어졌다. 그래서 이번 실험에서는 <strong>RF + KMeans one-hot</strong>을 가장 납득 가능한 융합 모델로 본다.
+                    cluster 중심까지의 거리 3개를 추가한 모델은 거리 feature 중요도는 높게 잡혔지만 F1과 Recall이 baseline보다 낮았다. 이번 실행 결과에서는 <strong>RF + KMeans one-hot</strong>이 가장 납득 가능한 융합 모델이다.
                 </p>
             </div>
         </section>
@@ -631,9 +631,9 @@ th {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>F1</td>
-                                <td><code>n_estimators=250</code>, <code>criterion=log_loss</code>, <code>max_depth=12</code>, <code>min_samples_leaf=3</code>, <code>min_samples_split=50</code>, <code>max_features=log2</code></td>
+	                            <tr>
+	                                <td>F1</td>
+	                                <td><code>n_estimators=150</code>, <code>criterion=log_loss</code>, <code>max_depth=None</code>, <code>min_samples_leaf=5</code>, <code>min_samples_split=50</code>, <code>max_features=sqrt</code></td>
                             </tr>
                             <tr>
                                 <td>Precision</td>
@@ -672,38 +672,38 @@ th {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Random Forest default</td>
-                        <td>0.8431</td>
-                        <td>0.4932</td>
-                        <td>0.0942</td>
-                        <td>0.1582</td>
-                        <td>0.7734</td>
-                        <td>0.3543</td>
-                    </tr>
-                    <tr class="selected">
-                        <td>Random Forest tuned by F1</td>
-                        <td>0.7370</td>
-                        <td>0.3253</td>
-                        <td>0.6335</td>
-                        <td>0.4298</td>
-                        <td>0.7826</td>
-                        <td>0.3578</td>
-                    </tr>
-                    <tr>
-                        <td>Random Forest tuned by Precision</td>
-                        <td>0.8345</td>
-                        <td>0.4534</td>
-                        <td>0.2801</td>
-                        <td>0.3463</td>
-                        <td>0.7860</td>
-                        <td>0.3635</td>
-                    </tr>
+	                    <tr>
+	                        <td>Random Forest default</td>
+	                        <td>0.8193</td>
+	                        <td>0.4026</td>
+	                        <td>0.3194</td>
+	                        <td>0.3562</td>
+	                        <td>0.7770</td>
+	                        <td>0.3556</td>
+	                    </tr>
+	                    <tr class="selected">
+	                        <td>Random Forest tuned by F1</td>
+	                        <td>0.7284</td>
+	                        <td>0.3224</td>
+	                        <td>0.6675</td>
+	                        <td>0.4348</td>
+	                        <td>0.7871</td>
+	                        <td>0.3726</td>
+	                    </tr>
+	                    <tr>
+	                        <td>Random Forest tuned by Precision</td>
+	                        <td>0.7825</td>
+	                        <td>0.3576</td>
+	                        <td>0.4895</td>
+	                        <td>0.4133</td>
+	                        <td>0.7803</td>
+	                        <td>0.3659</td>
+	                    </tr>
                 </tbody>
             </table>
             <div class="interpretation">
                 <p>
-                    Default 모델은 accuracy가 높지만 구매 recall이 0.0942에 그쳐 구매자를 거의 잡지 못한다. F1 튜닝 모델은 accuracy를 일부 포기하는 대신 구매 recall을 0.6335까지 올려, 불균형 데이터에서 실사용성이 더 높다.
+	                    Default 모델은 accuracy와 precision이 높지만 구매 recall은 0.3194에 머문다. F1 튜닝 모델은 accuracy를 일부 포기하는 대신 구매 recall을 0.6675까지 올려, 구매 후보를 넓게 잡는 목적에 더 맞다.
                 </p>
             </div>
         </section>
@@ -715,7 +715,7 @@ th {
             </div>
             <div class="callout">
                 <p>
-                    군집 feature는 기존 clustering 분석과 맞춰 11개 행동 변수에 log1p와 StandardScaler를 적용해 만들었다. 누수 방지를 위해 scaler와 K-Means는 train 데이터에만 fit했고, test 데이터는 predict와 transform만 수행했다. 즉 test 데이터는 K-Means 중심을 만드는 데 전혀 쓰지 않았다.
+                    군집 feature는 <code>models/clustering/csv/X_train_knn.csv</code>, <code>models/clustering/csv/X_test_knn.csv</code>의 11개 행동 변수를 기준으로 만들었다. 누수 방지를 위해 scaler와 K-Means는 train 데이터에만 fit했고, test 데이터는 predict와 transform만 수행했다. 즉 test 데이터는 K-Means 중심을 만드는 데 전혀 쓰지 않았다.
                 </p>
             </div>
             <div class="step-list">
@@ -730,7 +730,7 @@ th {
                     <span>2</span>
                     <div>
                         <h3>train으로만 K-Means 학습</h3>
-                        <p>방문 행동 변수 11개를 log 변환하고 표준화한 뒤, train 데이터로만 <code>KMeans(n_clusters=3)</code>를 fit했다. 이렇게 해야 test 정보가 군집 중심에 섞이지 않는다.</p>
+                        <p><code>models/clustering/csv/X_train_knn.csv</code>의 방문 행동 변수 11개를 log 변환하고 표준화한 뒤, train 데이터로만 <code>KMeans(n_clusters=3)</code>를 fit했다. <code>X_test_knn.csv</code>는 같은 기준으로 변환한 뒤 predict만 수행했다.</p>
                     </div>
                 </article>
                 <article>
@@ -790,16 +790,16 @@ th {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td><code>rf_cluster_2</code></td><td>0.0096</td><td>0.0058</td></tr>
-                            <tr><td><code>rf_cluster_0</code></td><td>0.0047</td><td>0.0033</td></tr>
-                            <tr><td><code>rf_cluster_1</code></td><td>0.0039</td><td>0.0016</td></tr>
-                            <tr><td><code>rf_cluster_dist_2</code></td><td>-</td><td>0.1028</td></tr>
-                            <tr><td><code>rf_cluster_dist_1</code></td><td>-</td><td>0.0585</td></tr>
-                            <tr><td><code>rf_cluster_dist_0</code></td><td>-</td><td>0.0459</td></tr>
+	                            <tr><td><code>rf_cluster_2</code></td><td>0.0086</td><td>0.0038</td></tr>
+	                            <tr><td><code>rf_cluster_0</code></td><td>0.0043</td><td>0.0036</td></tr>
+	                            <tr><td><code>rf_cluster_1</code></td><td>0.0038</td><td>0.0016</td></tr>
+	                            <tr><td><code>rf_cluster_dist_2</code></td><td>-</td><td>0.1074</td></tr>
+	                            <tr><td><code>rf_cluster_dist_1</code></td><td>-</td><td>0.0559</td></tr>
+	                            <tr><td><code>rf_cluster_dist_0</code></td><td>-</td><td>0.0456</td></tr>
                         </tbody>
                     </table>
                     <p class="table-note">
-                        one-hot만 쓴 모델에서는 cluster feature 중요도가 작지만, 성능은 가장 안정적으로 개선됐다. distance 모델에서는 거리 feature 중요도가 높게 잡혔지만, 실제 test F1과 Recall은 떨어졌다.
+	                        one-hot만 쓴 모델에서는 cluster feature 중요도는 작지만 Recall, F1, ROC-AUC가 baseline보다 개선됐다. distance 모델에서는 거리 feature 중요도가 높게 잡혔지만 test Recall과 F1은 baseline보다 낮았다.
                     </p>
                 </div>
             </div>
@@ -818,48 +818,48 @@ th {
                 <tbody>
                     <tr>
                         <td>RF baseline tuned by F1</td>
-                        <td>0.7370</td>
-                        <td>0.3253</td>
-                        <td>0.6335</td>
-                        <td>0.4298</td>
-                        <td>0.7826</td>
-                        <td>0.3578</td>
+	                        <td>0.7284</td>
+	                        <td>0.3224</td>
+	                        <td>0.6675</td>
+	                        <td>0.4348</td>
+	                        <td>0.7871</td>
+	                        <td>0.3726</td>
                     </tr>
-                    <tr class="selected">
-                        <td>RF + KMeans one-hot</td>
-                        <td>0.7362</td>
-                        <td>0.3253</td>
-                        <td>0.6387</td>
-                        <td>0.4311</td>
-                        <td>0.7838</td>
-                        <td>0.3623</td>
+	                    <tr class="selected">
+	                        <td>RF + KMeans one-hot</td>
+	                        <td>0.7272</td>
+	                        <td>0.3243</td>
+	                        <td>0.6859</td>
+	                        <td>0.4403</td>
+	                        <td>0.7897</td>
+	                        <td>0.3701</td>
                     </tr>
                     <tr>
                         <td>RF + KMeans one-hot + distances</td>
-                        <td>0.7329</td>
-                        <td>0.3171</td>
-                        <td>0.6126</td>
-                        <td>0.4179</td>
-                        <td>0.7809</td>
-                        <td>0.3556</td>
+                        <td>0.7239</td>
+                        <td>0.3166</td>
+                        <td>0.6597</td>
+                        <td>0.4278</td>
+                        <td>0.7844</td>
+                        <td>0.3633</td>
                     </tr>
                 </tbody>
             </table>
             <div class="interpretation">
                 <p>
-                    One-hot cluster label만 추가한 모델이 baseline보다 F1, ROC-AUC, PR-AUC, Recall을 모두 소폭 개선했다. 중심거리 3개까지 추가하면 distance feature 중요도는 높게 잡히지만, test F1과 Recall은 baseline보다 떨어져 이번 비교에서는 채택 우선순위가 낮다.
+                    One-hot cluster label만 추가한 모델은 baseline보다 Recall, F1, ROC-AUC를 소폭 개선했다. 중심거리 3개까지 추가하면 distance feature 중요도는 높지만, test Recall과 F1은 baseline보다 낮다.
                 </p>
             </div>
             <div class="explain-box">
                 <h3>어떤 부분이 발전했나</h3>
                 <p>
-                    cluster one-hot 모델의 개선 폭은 크지 않다. 따라서 "K-Means를 붙이면 RF가 크게 좋아진다"는 결론은 아니다. 더 정확한 해석은 "방문자 행동 유형을 나타내는 cluster label이 RF에 약간의 추가 정보를 제공했고, 특히 구매자를 놓치지 않는 Recall과 F1에 작은 도움이 됐다"이다. baseline 대비 Recall은 0.6335에서 0.6387, F1은 0.4298에서 0.4311, PR-AUC는 0.3578에서 0.3623으로 올라갔다.
+                    cluster one-hot 모델의 개선 폭은 크지 않다. 따라서 "K-Means를 붙이면 RF가 크게 좋아진다"는 결론은 아니다. 더 정확한 해석은 "방문자 행동 유형을 나타내는 cluster label이 RF에 약간의 추가 정보를 제공했다"이다. baseline 대비 Recall은 0.6675에서 0.6859, F1은 0.4348에서 0.4403으로 올라갔다.
                 </p>
                 <p>
                     발전한 점은 RF가 개별 변수만 보던 상태에서 "행동 유형"이라는 요약 정보를 함께 보게 됐다는 것이다. cluster 2처럼 구매율이 거의 없는 군집과 cluster 1처럼 구매율이 높은 군집이 구분되면, RF는 비슷한 ExitRates나 체류 시간을 가진 세션 사이에서도 행동 맥락을 조금 더 세밀하게 나눌 수 있다.
                 </p>
                 <p>
-                    다만 distance feature는 세 군집 중심까지의 연속적인 거리 정보를 주면서 모델을 더 복잡하게 만들었다. 이 정보가 feature importance에서는 크게 보였지만 test 성능은 떨어졌다. 이는 거리 값이 train 패턴을 더 강하게 설명했지만 일반화에는 덜 유리했을 가능성을 뜻한다.
+                    distance feature는 세 군집 중심까지의 연속적인 거리 정보를 주면서 모델을 더 복잡하게 만들었다. 이 정보는 feature importance에서는 크게 나타났지만, Recall은 0.6597, F1은 0.4278로 baseline보다 낮았다. 따라서 이번 결과에서는 거리값보다 one-hot cluster label만 추가한 모델을 더 합리적인 융합 후보로 본다.
                 </p>
             </div>
         </section>
@@ -872,7 +872,7 @@ th {
             <div class="explain-box">
                 <h3>혼동 행렬을 보는 방법</h3>
                 <p>
-                    <code>Actual Purchase</code> 행에서 <code>Pred Purchase</code>가 많을수록 구매자를 잘 잡은 것이다. F1 tuned 모델은 실제 구매자 382명 중 242명을 구매로 잡았고, Precision tuned 모델은 107명만 잡았다. 대신 Precision tuned 모델은 비구매자를 구매로 잘못 찍는 수가 129명으로 적다.
+	                    <code>Actual Purchase</code> 행에서 <code>Pred Purchase</code>가 많을수록 구매자를 잘 잡은 것이다. F1 tuned 모델은 실제 구매자 382명 중 255명을 구매로 잡았고, Precision tuned 모델은 187명을 잡았다. 대신 Precision tuned 모델은 비구매자를 구매로 잘못 찍는 수가 336명으로 더 적다.
                 </p>
             </div>
             <div class="two-column">
@@ -883,16 +883,16 @@ th {
                             <h4>F1 tuned</h4>
                             <div class="matrix">
                                 <span></span><span>Pred No</span><span>Pred Yes</span>
-                                <span>Actual No</span><strong>1,557</strong><strong>502</strong>
-                                <span>Actual Yes</span><strong>140</strong><strong>242</strong>
+	                                <span>Actual No</span><strong>1,523</strong><strong>536</strong>
+	                                <span>Actual Yes</span><strong>127</strong><strong>255</strong>
                             </div>
                         </div>
                         <div class="matrix-block">
                             <h4>Precision tuned</h4>
                             <div class="matrix">
                                 <span></span><span>Pred No</span><span>Pred Yes</span>
-                                <span>Actual No</span><strong>1,930</strong><strong>129</strong>
-                                <span>Actual Yes</span><strong>275</strong><strong>107</strong>
+	                                <span>Actual No</span><strong>1,723</strong><strong>336</strong>
+	                                <span>Actual Yes</span><strong>195</strong><strong>187</strong>
                             </div>
                         </div>
                     </div>
@@ -908,11 +908,11 @@ th {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>1</td><td>ExitRates 0.1411</td><td>ExitRates 0.1191</td></tr>
-                            <tr><td>2</td><td>total_duration 0.0950</td><td>total_duration 0.0901</td></tr>
-                            <tr><td>3</td><td>ProductRelated_Duration 0.0912</td><td>ProductRelated_Duration 0.0898</td></tr>
-                            <tr><td>4</td><td>BounceRates 0.0813</td><td>avg_time_per_product 0.0855</td></tr>
-                            <tr><td>5</td><td>avg_time_per_product 0.0724</td><td>total_pages 0.0705</td></tr>
+	                            <tr><td>1</td><td>ExitRates 0.1565</td><td>ExitRates 0.1212</td></tr>
+	                            <tr><td>2</td><td>ProductRelated_Duration 0.0986</td><td>total_duration 0.0931</td></tr>
+	                            <tr><td>3</td><td>total_duration 0.0920</td><td>ProductRelated_Duration 0.0906</td></tr>
+	                            <tr><td>4</td><td>BounceRates 0.0770</td><td>avg_time_per_product 0.0841</td></tr>
+	                            <tr><td>5</td><td>avg_time_per_product 0.0733</td><td>total_pages 0.0710</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -939,7 +939,7 @@ th {
                 </article>
                 <article>
                     <h3>군집 정보는 보조 신호로 쓰는 게 맞다</h3>
-                    <p>K-Means one-hot feature는 성능을 소폭 개선했지만 핵심 변수는 여전히 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code>이다. 군집은 주 모델을 대체하기보다 행동 유형을 요약하는 보조 feature로 해석하는 편이 안전하다.</p>
+                    <p>K-Means one-hot feature는 Recall, F1, ROC-AUC를 소폭 개선했다. 그래도 핵심 변수는 여전히 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code>이므로, 군집은 주 모델을 대체하기보다 행동 유형을 요약하는 보조 feature로 해석하는 편이 안전하다.</p>
                 </article>
             </div>
         </section>
