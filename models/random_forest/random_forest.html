@@ -1,22 +1,70 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Forest 구매 예측 모델 리포트</title>
-    <style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Random Forest 구매 예측 모델 — 설명</title>
+<script>
+(function () {
+    var theme = localStorage.getItem("theme");
+    if (theme && theme !== "auto") {
+        document.documentElement.setAttribute("data-theme", theme);
+    }
+})();
+</script>
+<style>
 :root {
-    --bg: #f7f8fb;
-    --panel: #ffffff;
-    --panel-soft: #eef5f3;
-    --ink: #1e293b;
-    --muted: #64748b;
-    --line: #d7dee8;
-    --green: #0f766e;
-    --blue: #2563eb;
-    --amber: #b45309;
-    --red: #b91c1c;
-    --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    --fg: #1f2328;
+    --muted: #656d76;
+    --border: #d0d7de;
+    --bg: #ffffff;
+    --code: #f6f8fa;
+    --accent: #0969da;
+    --side: #f6f8fa;
+    --ok: #1a7f37;
+    --warn: #9a6700;
+    --bad: #cf222e;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --border: #30363d;
+        --bg: #0d1117;
+        --code: #161b22;
+        --accent: #58a6ff;
+        --side: #161b22;
+        --ok: #3fb950;
+        --warn: #d29922;
+        --bad: #ff7b72;
+    }
+}
+
+:root[data-theme="dark"] {
+    --fg: #e6edf3;
+    --muted: #8b949e;
+    --border: #30363d;
+    --bg: #0d1117;
+    --code: #161b22;
+    --accent: #58a6ff;
+    --side: #161b22;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #ff7b72;
+}
+
+:root[data-theme="light"] {
+    --fg: #1f2328;
+    --muted: #656d76;
+    --border: #d0d7de;
+    --bg: #ffffff;
+    --code: #f6f8fa;
+    --accent: #0969da;
+    --side: #f6f8fa;
+    --ok: #1a7f37;
+    --warn: #9a6700;
+    --bad: #cf222e;
 }
 
 * {
@@ -29,298 +77,364 @@ html {
 
 body {
     margin: 0;
+    color: var(--fg);
     background: var(--bg);
-    color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    line-height: 1.65;
+    font-size: 17px;
+    line-height: 1.75;
 }
 
-.container {
-    width: min(1180px, calc(100% - 40px));
-    margin: 0 auto;
+.layout {
+    display: flex;
+    align-items: flex-start;
 }
 
-.report-header {
-    background: #13231f;
-    color: #f8fafc;
-    padding: 56px 0 48px;
-    border-bottom: 5px solid var(--green);
+#sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    width: 278px;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+    padding: 50px 12px 18px;
+    border-right: 1px solid var(--border);
+    background: var(--side);
+    font-size: 0.9em;
 }
 
-.eyebrow {
+#sidebar .toc-title {
     margin: 0 0 12px;
-    color: #99f6e4;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
+    padding: 0 6px;
+    color: var(--muted);
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+}
+
+#sidebar details {
+    padding: 2px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+#sidebar details:last-of-type {
+    border-bottom: none;
+}
+
+#sidebar summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 6px;
+    border-radius: 6px;
+    color: var(--fg);
+    cursor: pointer;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    list-style: none;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+#sidebar summary:hover {
+    background: var(--code);
+}
+
+#sidebar summary::-webkit-details-marker {
+    display: none;
+}
+
+#sidebar summary::before {
+    content: "\25B8";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s;
+}
+
+#sidebar details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+#sidebar ul {
+    margin: 0.1em 0 0.5em;
+    padding: 0 0 0 18px;
+    list-style: none;
+}
+
+#sidebar li {
+    margin: 0.1em 0;
+}
+
+#sidebar a {
+    display: block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: var(--muted);
+    line-height: 1.3;
+    text-decoration: none;
+}
+
+#sidebar a:hover,
+#sidebar a.active {
+    color: var(--accent);
+    background: var(--code);
+}
+
+main {
+    flex: 1;
+    min-width: 0;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 44px 56px 64px;
+}
+
+h1,
+h2,
+h3 {
+    scroll-margin-top: 18px;
 }
 
 h1 {
     margin: 0;
-    max-width: 900px;
-    font-size: clamp(2rem, 4vw, 3.25rem);
-    line-height: 1.15;
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--border);
+    font-size: 1.95em;
+    line-height: 1.25;
     letter-spacing: 0;
 }
 
-.subtitle {
-    max-width: 760px;
-    margin: 18px 0 0;
-    color: #cbd5e1;
-    font-size: 1.05rem;
-}
-
-.toc {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.94);
-    border-bottom: 1px solid var(--line);
-    backdrop-filter: blur(10px);
-}
-
-.toc-inner {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 10px 0;
-}
-
-.toc a {
-    flex: 0 0 auto;
-    color: var(--muted);
-    padding: 7px 10px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.92rem;
-    font-weight: 700;
-}
-
-.toc a:hover {
-    background: var(--panel-soft);
-    color: var(--green);
-}
-
-.section {
-    margin: 38px 0;
-    padding: 30px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-}
-
-.section-heading {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 22px;
-}
-
-.section-kicker {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: var(--panel-soft);
-    color: var(--green);
-    font-weight: 900;
-    font-size: 0.92rem;
-}
-
 h2 {
-    margin: 0;
-    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    margin: 2em 0 0.6em;
+    padding-bottom: 0.25em;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.5em;
+    line-height: 1.35;
     letter-spacing: 0;
 }
 
 h3 {
-    margin: 0 0 12px;
-    font-size: 1.12rem;
+    margin: 1.5em 0 0.55em;
+    font-size: 1.15em;
+    line-height: 1.4;
     letter-spacing: 0;
 }
 
 h4 {
-    margin: 0 0 10px;
-    font-size: 0.98rem;
+    margin: 0 0 0.6em;
+    font-size: 1em;
 }
 
 p {
-    margin: 0 0 14px;
+    margin: 0 0 1em;
 }
 
 p:last-child {
     margin-bottom: 0;
 }
 
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 code {
-    padding: 0.1em 0.35em;
-    background: #edf2f7;
+    padding: 0.15em 0.4em;
     border-radius: 5px;
-    color: #0f172a;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    color: var(--fg);
+    background: var(--code);
+    font-family: Consolas, Menlo, "SFMono-Regular", monospace;
     font-size: 0.88em;
-}
-
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-    margin-bottom: 18px;
-}
-
-.metric {
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fbfcfe;
-}
-
-.metric-label,
-.metric-note {
-    display: block;
-    color: var(--muted);
-    font-size: 0.86rem;
-    font-weight: 700;
-}
-
-.metric strong {
-    display: block;
-    margin: 8px 0;
-    color: var(--green);
-    font-size: 2rem;
-    line-height: 1;
-}
-
-.callout,
-.interpretation {
-    border-left: 4px solid var(--green);
-    background: var(--panel-soft);
-    padding: 16px 18px;
-    border-radius: 8px;
-}
-
-.callout {
-    margin-bottom: 20px;
-}
-
-.explain-box {
-    margin: 18px 0;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fbfcfe;
-}
-
-.explain-box h3 {
-    color: var(--green);
-}
-
-.fusion-table {
-    margin-top: 22px;
-}
-
-.two-column {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 24px;
-}
-
-.term-grid,
-.step-list {
-    display: grid;
-    gap: 16px;
-}
-
-.term-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.term-grid article,
-.step-list article {
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fbfcfe;
-}
-
-.term-grid article {
-    padding: 18px;
-}
-
-.step-list {
-    margin: 22px 0;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.step-list article {
-    display: grid;
-    grid-template-columns: 42px minmax(0, 1fr);
-    gap: 14px;
-    padding: 16px;
-}
-
-.step-list article > span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    color: #f8fafc;
-    background: var(--green);
-    font-weight: 900;
-}
-
-.table-note {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 0.92rem;
 }
 
 table {
     width: 100%;
+    margin: 1em 0;
     border-collapse: collapse;
-    font-size: 0.94rem;
+    font-size: 0.92em;
 }
 
 th,
 td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--line);
+    padding: 8px 12px;
+    border: 1px solid var(--border);
     text-align: left;
     vertical-align: top;
 }
 
 th {
-    color: #334155;
-    background: #f1f5f9;
+    background: var(--code);
+    font-weight: 700;
+}
+
+tr:nth-child(even) td {
+    background: rgba(127, 127, 127, 0.05);
+}
+
+.meta {
+    margin-bottom: 1.5em;
+    color: var(--muted);
+    font-size: 0.85em;
+}
+
+.lead {
+    margin: 1.2em 0;
+    padding: 12px 18px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--ok);
+    border-radius: 8px;
+    background: rgba(26, 127, 55, 0.07);
+    font-size: 1.05em;
+}
+
+.group-label {
+    margin: 2.4em 0 -0.4em;
+    color: var(--accent);
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.gloss,
+.note,
+.decision {
+    margin: 1.1em 0;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    background: rgba(9, 105, 218, 0.06);
+    font-size: 0.94em;
+}
+
+.decision {
+    border-left-color: var(--ok);
+    background: rgba(26, 127, 55, 0.07);
+}
+
+.note {
+    border-left-color: var(--warn);
+    background: rgba(154, 103, 0, 0.08);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 1.2em 0;
+}
+
+.card {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--code);
+}
+
+.card span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.82em;
+    font-weight: 700;
+}
+
+.card strong {
+    display: block;
+    margin: 4px 0;
+    color: var(--ok);
+    font-size: 1.75em;
+    line-height: 1.15;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+}
+
+.mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.mini {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--code);
+}
+
+.mini h3 {
+    margin-top: 0;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 1.1em 0;
+}
+
+.step {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--code);
+}
+
+.step > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--accent);
     font-weight: 800;
 }
 
-.wide-table td:not(:first-child),
-.wide-table th:not(:first-child) {
+.step h3 {
+    margin-top: 0;
+}
+
+.metric-table td:not(:first-child),
+.metric-table th:not(:first-child) {
     text-align: right;
+    font-variant-numeric: tabular-nums;
 }
 
 .selected td {
-    background: #eefdf8;
+    background: rgba(26, 127, 55, 0.1) !important;
     font-weight: 700;
 }
 
 .bar-list {
     display: grid;
     gap: 10px;
+    margin: 1em 0;
 }
 
 .bar-row {
     display: grid;
-    grid-template-columns: 74px minmax(120px, 1fr) 58px;
+    grid-template-columns: 74px minmax(120px, 1fr) 60px;
     align-items: center;
     gap: 10px;
-    font-size: 0.92rem;
+    font-size: 0.92em;
 }
 
 .bar-row span {
@@ -330,19 +444,19 @@ th {
 
 .bar-row div {
     height: 12px;
-    background: #e2e8f0;
-    border-radius: 8px;
     overflow: hidden;
+    border-radius: 8px;
+    background: var(--border);
 }
 
 .bar-row i {
     display: block;
     height: 100%;
-    background: var(--blue);
+    background: var(--accent);
 }
 
 .bar-row.best i {
-    background: var(--green);
+    background: var(--ok);
 }
 
 .bar-row strong {
@@ -351,22 +465,22 @@ th {
 
 .matrix-grid {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
 }
 
 .matrix-block {
     padding: 14px;
-    border: 1px solid var(--line);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #fbfcfe;
+    background: var(--code);
 }
 
 .matrix {
     display: grid;
     grid-template-columns: 92px repeat(2, minmax(72px, 1fr));
     gap: 4px;
-    align-items: stretch;
-    font-size: 0.9rem;
+    font-size: 0.9em;
 }
 
 .matrix span,
@@ -376,573 +490,460 @@ th {
     justify-content: center;
     min-height: 38px;
     padding: 6px;
-    background: #f1f5f9;
     border-radius: 6px;
+    background: var(--bg);
 }
 
 .matrix strong {
-    background: #dbeafe;
-    color: #1e3a8a;
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
 }
 
-.insight-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+#themeBtn,
+#menuBtn {
+    position: fixed;
+    top: 12px;
+    z-index: 31;
+    padding: 6px 11px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--fg);
+    background: var(--side);
+    cursor: pointer;
+    font-size: 0.92em;
+    line-height: 1;
 }
 
-.insight-list article {
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fbfcfe;
+#menuBtn {
+    left: 14px;
+}
+
+#themeBtn {
+    right: 14px;
+}
+
+#themeBtn:hover,
+#menuBtn:hover {
+    border-color: var(--accent);
+}
+
+body.nav-collapsed #sidebar {
+    display: none;
 }
 
 @media (max-width: 900px) {
-    .summary-grid,
-    .two-column,
-    .insight-list,
-    .term-grid,
-    .step-list {
+    .layout {
+        display: block;
+    }
+
+    #sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    main {
+        max-width: none;
+        padding: 24px 16px 48px;
+    }
+
+    .cards,
+    .two-col,
+    .mini-grid,
+    .steps,
+    .matrix-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 640px) {
-    .container {
-        width: min(100% - 28px, 1180px);
-    }
-
-    .section {
-        padding: 20px 16px;
+    body {
+        font-size: 16px;
     }
 
     th,
     td {
-        padding: 8px;
-        font-size: 0.86rem;
+        padding: 7px 8px;
+        font-size: 0.86em;
     }
 
     .matrix {
-        grid-template-columns: 76px repeat(2, minmax(58px, 1fr));
-        font-size: 0.78rem;
+        grid-template-columns: 78px repeat(2, minmax(54px, 1fr));
+        font-size: 0.78em;
     }
 }
-    </style>
+</style>
 </head>
 <body>
-    <header class="report-header">
-        <div class="container">
-            <p class="eyebrow">Model Report</p>
-            <h1>Random Forest 구매 예측 모델 리포트</h1>
-            <p class="subtitle">Online Shoppers Purchasing Intention 데이터의 구매 전환 예측을 위한 Random Forest 재분석 결과</p>
+<button id="menuBtn" onclick="toggleNav()" title="목차 접기/펼치기">목차</button>
+<button id="themeBtn" onclick="toggleTheme()" title="테마 전환">테마</button>
+<div class="layout">
+<nav id="sidebar" aria-label="문서 목차">
+    <div class="toc-title">목차</div>
+    <details open>
+        <summary>개요</summary>
+        <ul>
+            <li><a href="#s-summary">한 문장 요약</a></li>
+            <li><a href="#s-question">분석 질문</a></li>
+            <li><a href="#s-read">읽는 법</a></li>
+        </ul>
+    </details>
+    <details open>
+        <summary>데이터와 모델</summary>
+        <ul>
+            <li><a href="#s-data">데이터 기준</a></li>
+            <li><a href="#s-features">변수 풀이</a></li>
+            <li><a href="#s-tuning">튜닝 이유</a></li>
+        </ul>
+    </details>
+    <details open>
+        <summary>성능 비교</summary>
+        <ul>
+            <li><a href="#s-metrics">지표 읽는 기준</a></li>
+            <li><a href="#s-performance">Raw test 결과</a></li>
+            <li><a href="#s-fusion">K-Means 융합</a></li>
+        </ul>
+    </details>
+    <details open>
+        <summary>해석과 결론</summary>
+        <ul>
+            <li><a href="#s-diagnostics">혼동 행렬</a></li>
+            <li><a href="#s-importance">중요 변수</a></li>
+            <li><a href="#s-conclusion">결론</a></li>
+        </ul>
+    </details>
+</nav>
+
+<main>
+    <div class="meta">노트북(<code>RandomForest.ipynb</code>) 기반 설명 문서 · 기존 RF split 유지 · KNN/클러스터링 보고서와 같은 순차 읽기용 구성</div>
+    <h1>Random Forest 구매 예측 모델 — 설명 문서</h1>
+
+    <p class="lead" id="s-summary"><b>한 문장 요약</b> — Random Forest는 구매자를 넓게 잡는 방향으로 튜닝했을 때 가장 실용적이었고, K-Means 군집 라벨을 one-hot 변수로 추가하면 <b>F1 0.4348 → 0.4403</b>, <b>Recall 0.6675 → 0.6859</b>로 아주 작지만 일관된 개선이 있었다.</p>
+
+    <div class="cards" aria-label="핵심 수치">
+        <div class="card">
+            <span>최고 F1</span>
+            <strong>0.4403</strong>
+            <span>RF + K-Means one-hot</span>
         </div>
-    </header>
-
-    <nav class="toc" aria-label="문서 목차">
-        <div class="container toc-inner">
-            <a href="#summary">요약</a>
-            <a href="#guide">읽는 법</a>
-            <a href="#data">데이터</a>
-            <a href="#tuning">튜닝</a>
-            <a href="#performance">성능</a>
-            <a href="#fusion">융합</a>
-            <a href="#diagnostics">진단</a>
-            <a href="#insights">해석</a>
+        <div class="card">
+            <span>구매 Recall</span>
+            <strong>0.6859</strong>
+            <span>실제 구매자 중 잡아낸 비율</span>
         </div>
-    </nav>
+        <div class="card">
+            <span>최고 Precision</span>
+            <strong>0.4026</strong>
+            <span>기본 Random Forest</span>
+        </div>
+        <div class="card">
+            <span>최고 PR-AUC</span>
+            <strong>0.3726</strong>
+            <span>F1 튜닝 RF</span>
+        </div>
+    </div>
 
-    <main class="container">
-        <section id="summary" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">01</span>
-                <h2>핵심 요약</h2>
-            </div>
-            <div class="summary-grid">
-                <article class="metric">
-                    <span class="metric-label">Best Raw Test F1</span>
-                    <strong>0.4403</strong>
-                    <span class="metric-note">RF + KMeans one-hot</span>
-                </article>
-                <article class="metric">
-                    <span class="metric-label">Purchase Recall</span>
-                    <strong>0.6859</strong>
-                    <span class="metric-note">RF + KMeans one-hot</span>
-                </article>
-                <article class="metric">
-                    <span class="metric-label">Best Precision</span>
-                    <strong>0.4026</strong>
-                    <span class="metric-note">Random Forest default</span>
-                </article>
-                <article class="metric">
-                    <span class="metric-label">Best PR-AUC</span>
-                    <strong>0.3726</strong>
-                    <span class="metric-note">F1 튜닝 RF</span>
-                </article>
-            </div>
-            <div class="callout">
-                <p>
-                    이 리포트의 질문은 단순하다. "방문자가 구매할지 예측할 때, Random Forest만 쓰는 것보다 K-Means로 만든 방문자 유형 정보를 함께 넣으면 도움이 되는가?"를 확인한다. 최종 비교 기준은 극단값을 제거하지 않은 raw test 데이터다. IQR 제거 데이터는 표본을 약 33% 줄이므로 메인 평가가 아니라 민감도 분석으로만 사용했다.
-                </p>
-            </div>
-            <div class="explain-box">
-                <h3>결론부터 읽으면</h3>
-                <p>
-                    <code>models/clustering/csv/X_train_knn.csv</code>로만 K-Means를 fit하고 cluster label을 one-hot feature로 추가했을 때 F1은 <strong>0.4348에서 0.4403</strong>, Recall은 <strong>0.6675에서 0.6859</strong>, ROC-AUC는 <strong>0.7871에서 0.7897</strong>로 소폭 개선됐다. 즉, 군집 정보는 큰 성능 향상까지는 아니지만 행동 유형을 요약하는 보조 신호로 작동했다.
-                </p>
-                <p>
-                    cluster 중심까지의 거리 3개를 추가한 모델은 거리 feature 중요도는 높게 잡혔지만 F1과 Recall이 baseline보다 낮았다. 이번 실행 결과에서는 <strong>RF + KMeans one-hot</strong>이 가장 납득 가능한 융합 모델이다.
-                </p>
-            </div>
-        </section>
+    <p class="group-label">개요</p>
+    <h2 id="s-question">분석 질문</h2>
+    <p>이 문서의 핵심 질문은 <b>"방문자가 구매할지 예측할 때 Random Forest만 쓰는 것보다, K-Means가 만든 방문자 행동 유형을 같이 넣으면 도움이 되는가"</b>이다. 여기서 K-Means는 별도의 예측 모델로 투표에 참여하는 것이 아니라, Random Forest가 읽을 수 있는 추가 컬럼을 만들어 주는 역할을 한다.</p>
+    <p>최종 평가는 극단값을 제거하지 않은 <b>raw test</b>를 기준으로 한다. IQR 방식으로 이상치를 제거하면 train 33.83%, test 33.31%가 빠지므로, 성능을 예쁘게 보이게 만드는 주 평가가 아니라 민감도 확인용으로만 보는 편이 안전하다.</p>
 
-        <section id="guide" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">02</span>
-                <h2>이 리포트 읽는 법</h2>
-            </div>
-            <div class="term-grid">
-                <article>
-                    <h3>Random Forest</h3>
-                    <p>
-                        여러 개의 Decision Tree를 만들어 투표하듯 예측하는 지도학습 모델이다. 여기서는 <code>Revenue</code>, 즉 구매 여부를 맞히는 분류 모델로 사용했다.
-                    </p>
-                </article>
-                <article>
-                    <h3>K-Means</h3>
-                    <p>
-                        정답을 보지 않고 행동 패턴이 비슷한 방문 세션끼리 묶는 비지도학습 모델이다. 여기서는 방문자를 3개 유형으로 나누고, 그 유형 번호를 RF의 추가 입력으로 넣었다.
-                    </p>
-                </article>
-                <article>
-                    <h3>모델 융합</h3>
-                    <p>
-                        두 모델의 예측값을 평균낸 것이 아니다. K-Means가 만든 <code>cluster label</code>과 <code>cluster distance</code>를 새로운 컬럼으로 만들어 Random Forest 입력 feature에 추가한 것이다.
-                    </p>
-                </article>
-            </div>
-            <div class="explain-box">
-                <h3>왜 이런 실험을 했나</h3>
-                <p>
-                    Random Forest는 개별 변수의 조합을 보고 구매 여부를 예측한다. 예를 들어 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code> 같은 값을 직접 본다. 그런데 K-Means는 여러 행동 변수를 한꺼번에 보고 "이 방문자는 어떤 행동 유형인가"를 먼저 요약한다.
-                </p>
-                <p>
-                    따라서 cluster feature를 추가한다는 것은 RF에게 "이 세션은 저관여/일반탐색/고관여 같은 행동 그룹 중 어디에 가까운가"라는 요약 정보를 더 알려주는 것이다. 이 요약 정보가 기존 변수만으로는 부족했던 패턴을 보완하면 성능이 좋아지고, 이미 기존 변수로 충분히 설명된다면 성능 변화가 작거나 오히려 떨어질 수 있다.
-                </p>
-            </div>
-        </section>
+    <div class="decision">
+        <p><b>결론부터</b> — K-Means one-hot feature는 성능을 크게 바꾸지는 않았다. 다만 구매자를 더 넓게 잡는 Recall과 균형 지표인 F1이 동시에 조금 올랐기 때문에, 이번 결과에서는 <b>RF + K-Means one-hot</b>을 가장 납득 가능한 최종 후보로 본다.</p>
+    </div>
 
-        <section id="data" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">03</span>
-                <h2>데이터와 전처리 기준</h2>
-            </div>
-            <div class="two-column">
-                <div>
-                    <h3>입력 데이터</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>평가 세트</th>
-                                <th>행 수</th>
-                                <th>구매 수</th>
-                                <th>구매 비율</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Train</td>
-                                <td>9,764</td>
-                                <td>1,526</td>
-                                <td>15.63%</td>
-                            </tr>
-                            <tr>
-                                <td>Raw test</td>
-                                <td>2,441</td>
-                                <td>382</td>
-                                <td>15.65%</td>
-                            </tr>
-                            <tr>
-                                <td>Clean test</td>
-                                <td>1,628</td>
-                                <td>252</td>
-                                <td>15.48%</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div>
-                    <h3>IQR 민감도 분석</h3>
-                    <p>
-                        IQR 기준으로 train 3,303건, test 813건이 제거된다. 제거 비율이 각각 33.83%, 33.31%로 크기 때문에 최종 Random Forest 평가는 raw tree 입력 기준으로 진행했다.
-                    </p>
-                    <p>
-                        누수 가능성이 큰 <code>PageValues</code>는 데이터에 남아 있는 경우 제거하도록 노트북에서 방어적으로 처리한다. 현재 실행 결과에서는 제거된 누수 컬럼이 없었다.
-                    </p>
-                    <p>
-                        train/test split은 기존 Random Forest 분석에서 쓰던 분할을 그대로 유지했다. 그래서 baseline RF와 K-Means feature 추가 RF는 같은 train/test 조건에서 비교된다.
-                    </p>
-                </div>
-            </div>
-        </section>
+    <h2 id="s-read">이 문서 읽는 법</h2>
+    <div class="mini-grid">
+        <article class="mini">
+            <h3>Random Forest</h3>
+            <p>여러 Decision Tree를 만들어 투표하듯 분류한다. 단일 트리보다 안정적이고 변수 중요도를 볼 수 있지만, 튜닝을 잘못하면 train 데이터의 우연한 규칙까지 외울 수 있다.</p>
+        </article>
+        <article class="mini">
+            <h3>K-Means</h3>
+            <p>정답인 <code>Revenue</code>를 보지 않고 행동이 비슷한 세션을 묶는다. 여기서는 방문 세션을 3개 행동 유형으로 나누고, 그 유형 정보를 RF 입력에 추가했다.</p>
+        </article>
+        <article class="mini">
+            <h3>모델 융합</h3>
+            <p>RF 예측값과 K-Means 예측값을 평균낸 것이 아니다. <code>rf_cluster_0</code> 같은 군집 라벨 또는 중심거리 컬럼을 RF feature에 붙인 방식이다.</p>
+        </article>
+    </div>
 
-        <section id="tuning" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">04</span>
-                <h2>과적합과 하이퍼파라미터 튜닝</h2>
-            </div>
-            <div class="explain-box">
-                <h3>여기서 튜닝한 이유</h3>
-                <p>
-                    Random Forest는 트리 깊이, 트리 개수, 분기 기준, leaf 크기 같은 설정에 따라 구매자를 너무 적게 잡거나 train 데이터에 과하게 맞을 수 있다. 이 분석에서는 불균형 데이터에서 Accuracy만 높이는 모델을 피하기 위해 F1과 Precision 기준 튜닝을 따로 비교했다.
-                </p>
-                <p>
-                    특히 트리가 깊어질수록 데이터가 더 잘게 쪼개진다. 초반 분기는 많은 샘플이 공유하는 큰 패턴을 잡지만, 깊은 분기는 몇 개 안 되는 샘플의 우연한 조합까지 규칙처럼 외울 수 있다. 이 경우 train 점수는 계속 좋아지지만 처음 보는 validation/test 데이터에서는 같은 규칙이 재현되지 않아 성능이 떨어진다.
-                </p>
-                <p>
-                    그래서 train 데이터 안에서 다시 stratified validation split을 만들었다. 이 분할은 최종 test를 대체하는 것이 아니라, 최종 test를 반복해서 들여다보며 모델을 고르는 일을 막기 위한 내부 점검용이다. <code>stratify</code>를 사용했기 때문에 구매/비구매 비율은 train과 validation에 비슷하게 유지된다.
-                </p>
-            </div>
-            <div class="two-column">
-                <div>
-                    <h3>깊이별 validation F1</h3>
-                    <div class="bar-list" aria-label="깊이별 F1 점수">
-                        <div class="bar-row"><span>depth 2</span><div><i style="width:88.8%"></i></div><strong>0.3698</strong></div>
-                        <div class="bar-row"><span>depth 4</span><div><i style="width:91.6%"></i></div><strong>0.3813</strong></div>
-                        <div class="bar-row"><span>depth 6</span><div><i style="width:94.9%"></i></div><strong>0.3953</strong></div>
-                        <div class="bar-row"><span>depth 8</span><div><i style="width:97.2%"></i></div><strong>0.4048</strong></div>
-                        <div class="bar-row best"><span>depth 10</span><div><i style="width:100%"></i></div><strong>0.4164</strong></div>
-                        <div class="bar-row"><span>depth 12</span><div><i style="width:96.9%"></i></div><strong>0.4036</strong></div>
-                        <div class="bar-row"><span>depth 16</span><div><i style="width:84.6%"></i></div><strong>0.3523</strong></div>
-                        <div class="bar-row"><span>None</span><div><i style="width:69.9%"></i></div><strong>0.2911</strong></div>
-                    </div>
-                    <p class="table-note">
-                        validation F1은 depth 10에서 가장 높고, depth 16과 무제한 깊이에서는 급격히 낮아진다. 이는 더 복잡한 트리가 train 데이터의 세부 패턴을 더 많이 외웠지만 일반화 성능은 나빠졌다는 신호다.
-                    </p>
-                </div>
-                <div>
-                    <h3>최종 후보 파라미터</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>튜닝 목적</th>
-                                <th>주요 파라미터</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-	                            <tr>
-	                                <td>F1</td>
-	                                <td><code>n_estimators=150</code>, <code>criterion=log_loss</code>, <code>max_depth=None</code>, <code>min_samples_leaf=5</code>, <code>min_samples_split=50</code>, <code>max_features=sqrt</code></td>
-                            </tr>
-                            <tr>
-                                <td>Precision</td>
-                                <td><code>n_estimators=250</code>, <code>criterion=entropy</code>, <code>max_depth=None</code>, <code>min_samples_leaf=3</code>, <code>min_samples_split=2</code>, <code>max_features=log2</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p>
-                        Precision 튜닝 모델은 CV precision은 가장 높지만 train precision도 높아 과적합 가능성을 함께 봐야 한다. 실제 test에서는 precision 상승 대신 recall이 크게 낮아진다.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <section id="performance" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">05</span>
-                <h2>Raw test 성능 비교</h2>
-            </div>
-            <div class="explain-box">
-                <h3>지표 해석</h3>
-                <p>
-                    이 데이터는 구매 비율이 약 15.6%라 Accuracy만 보면 모델이 좋아 보일 수 있다. 예를 들어 대부분을 비구매로 예측해도 Accuracy는 높게 나올 수 있다. 그래서 구매자를 얼마나 잘 잡는지 보는 <code>Recall</code>, 정밀도와 재현율의 균형인 <code>F1</code>, 불균형 데이터에서 유용한 <code>PR-AUC</code>를 함께 본다.
-                </p>
-            </div>
-            <table class="wide-table">
+    <p class="group-label">데이터와 모델</p>
+    <h2 id="s-data">데이터 기준</h2>
+    <div class="two-col">
+        <div>
+            <h3>분할과 구매 비율</h3>
+            <table>
                 <thead>
-                    <tr>
-                        <th>모델</th>
-                        <th>Accuracy</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1</th>
-                        <th>ROC-AUC</th>
-                        <th>PR-AUC</th>
-                    </tr>
+                    <tr><th>평가 세트</th><th>행 수</th><th>구매 수</th><th>구매 비율</th></tr>
                 </thead>
                 <tbody>
-	                    <tr>
-	                        <td>Random Forest default</td>
-	                        <td>0.8193</td>
-	                        <td>0.4026</td>
-	                        <td>0.3194</td>
-	                        <td>0.3562</td>
-	                        <td>0.7770</td>
-	                        <td>0.3556</td>
-	                    </tr>
-	                    <tr class="selected">
-	                        <td>Random Forest tuned by F1</td>
-	                        <td>0.7284</td>
-	                        <td>0.3224</td>
-	                        <td>0.6675</td>
-	                        <td>0.4348</td>
-	                        <td>0.7871</td>
-	                        <td>0.3726</td>
-	                    </tr>
-	                    <tr>
-	                        <td>Random Forest tuned by Precision</td>
-	                        <td>0.7825</td>
-	                        <td>0.3576</td>
-	                        <td>0.4895</td>
-	                        <td>0.4133</td>
-	                        <td>0.7803</td>
-	                        <td>0.3659</td>
-	                    </tr>
+                    <tr><td>Train</td><td>9,764</td><td>1,526</td><td>15.63%</td></tr>
+                    <tr><td>Raw test</td><td>2,441</td><td>382</td><td>15.65%</td></tr>
+                    <tr><td>Clean test</td><td>1,628</td><td>252</td><td>15.48%</td></tr>
                 </tbody>
             </table>
-            <div class="interpretation">
-                <p>
-	                    Default 모델은 accuracy와 precision이 높지만 구매 recall은 0.3194에 머문다. F1 튜닝 모델은 accuracy를 일부 포기하는 대신 구매 recall을 0.6675까지 올려, 구매 후보를 넓게 잡는 목적에 더 맞다.
-                </p>
-            </div>
-        </section>
+        </div>
+        <div>
+            <h3>왜 raw test를 기준으로 보나</h3>
+            <p>IQR 제거는 극단 세션을 줄여 모델을 안정적으로 보이게 할 수 있지만, 실제 쇼핑몰 로그에는 길게 탐색하거나 거의 바로 나가는 세션이 자연스럽게 존재한다. 그래서 최종 모델 비교는 원래 분포를 더 잘 대표하는 raw test에서 한다.</p>
+            <p><code>PageValues</code>는 구매 이후 정보가 섞일 수 있는 누수 변수이므로, 데이터에 남아 있으면 제거하는 방어 로직을 둔다. 이번 실행 결과에서는 Random Forest 입력 CSV에 이미 포함되어 있지 않았다.</p>
+        </div>
+    </div>
 
-        <section id="fusion" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">06</span>
-                <h2>K-Means 군집 feature 융합 실험</h2>
+    <h2 id="s-features">변수 풀이</h2>
+    <p>Random Forest 입력은 원본 행동 변수와 파생 변수, 월/방문자 유형 one-hot 변수를 함께 쓴다. 아래 표는 문서를 읽을 때 자주 나오는 변수의 뜻이다.</p>
+    <table>
+        <thead>
+            <tr><th>컬럼</th><th>한국어 의미</th><th>해석 방향</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Administrative</code>, <code>Informational</code>, <code>ProductRelated</code></td><td>관리성/정보성/상품 관련 페이지 방문 수</td><td>어떤 종류의 페이지를 얼마나 탐색했는지</td></tr>
+            <tr><td><code>Administrative_Duration</code>, <code>Informational_Duration</code>, <code>ProductRelated_Duration</code></td><td>각 페이지 유형의 체류 시간</td><td>단순 클릭인지, 실제로 오래 살펴봤는지</td></tr>
+            <tr><td><code>BounceRates</code></td><td>이탈률</td><td>들어온 페이지만 보고 바로 떠나는 성향</td></tr>
+            <tr><td><code>ExitRates</code></td><td>종료율</td><td>그 페이지에서 세션이 끝나는 성향, 이번 RF에서 가장 강한 신호</td></tr>
+            <tr><td><code>total_pages</code></td><td>전체 방문 페이지 수</td><td>세션의 탐색량 요약</td></tr>
+            <tr><td><code>total_duration</code></td><td>전체 체류 시간</td><td>전체 관여도 요약</td></tr>
+            <tr><td><code>avg_time_per_product</code></td><td>상품 페이지당 평균 체류 시간</td><td>상품을 빠르게 훑었는지, 비교적 자세히 봤는지</td></tr>
+            <tr><td><code>bounce_exit_ratio</code></td><td>이탈률과 종료율의 비율형 파생 변수</td><td>즉시 이탈과 세션 종료 패턴의 관계</td></tr>
+            <tr><td><code>Month_*</code>, <code>VisitorType_*</code>, <code>Weekend</code></td><td>방문 월, 방문자 유형, 주말 여부</td><td>시점과 방문자 속성의 보조 신호</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="s-tuning">튜닝 이유: Accuracy만 높이면 안 된다</h2>
+    <p>구매 비율은 약 15.6%로 낮다. 그래서 대부분을 "비구매"로 예측해도 Accuracy는 꽤 높게 보일 수 있다. 이 분석에서는 구매 후보를 실제로 찾아내는 목적이 중요하므로, Accuracy보다 <b>Recall</b>, <b>F1</b>, <b>PR-AUC</b>를 함께 본다.</p>
+
+    <div class="two-col">
+        <div>
+            <h3>깊이별 validation F1</h3>
+            <div class="bar-list" aria-label="깊이별 F1 점수">
+                <div class="bar-row"><span>depth 2</span><div><i style="width:88.8%"></i></div><strong>0.3698</strong></div>
+                <div class="bar-row"><span>depth 4</span><div><i style="width:91.6%"></i></div><strong>0.3813</strong></div>
+                <div class="bar-row"><span>depth 6</span><div><i style="width:94.9%"></i></div><strong>0.3953</strong></div>
+                <div class="bar-row"><span>depth 8</span><div><i style="width:97.2%"></i></div><strong>0.4048</strong></div>
+                <div class="bar-row best"><span>depth 10</span><div><i style="width:100%"></i></div><strong>0.4164</strong></div>
+                <div class="bar-row"><span>depth 12</span><div><i style="width:96.9%"></i></div><strong>0.4036</strong></div>
+                <div class="bar-row"><span>depth 16</span><div><i style="width:84.6%"></i></div><strong>0.3523</strong></div>
+                <div class="bar-row"><span>None</span><div><i style="width:69.9%"></i></div><strong>0.2911</strong></div>
             </div>
-            <div class="callout">
-                <p>
-                    군집 feature는 <code>models/clustering/csv/X_train_knn.csv</code>, <code>models/clustering/csv/X_test_knn.csv</code>의 11개 행동 변수를 기준으로 만들었다. 누수 방지를 위해 scaler와 K-Means는 train 데이터에만 fit했고, test 데이터는 predict와 transform만 수행했다. 즉 test 데이터는 K-Means 중심을 만드는 데 전혀 쓰지 않았다.
-                </p>
-            </div>
-            <div class="step-list">
-                <article>
-                    <span>1</span>
-                    <div>
-                        <h3>기존 split 유지</h3>
-                        <p>Random Forest가 쓰던 <code>X_train</code>, <code>X_test</code>, <code>y_train</code>, <code>y_test</code>를 그대로 사용했다. 비교 조건을 바꾸지 않기 위해서다.</p>
-                    </div>
-                </article>
-                <article>
-                    <span>2</span>
-                    <div>
-                        <h3>train으로만 K-Means 학습</h3>
-                        <p><code>models/clustering/csv/X_train_knn.csv</code>의 방문 행동 변수 11개를 log 변환하고 표준화한 뒤, train 데이터로만 <code>KMeans(n_clusters=3)</code>를 fit했다. <code>X_test_knn.csv</code>는 같은 기준으로 변환한 뒤 predict만 수행했다.</p>
-                    </div>
-                </article>
-                <article>
-                    <span>3</span>
-                    <div>
-                        <h3>cluster label을 RF 입력에 추가</h3>
-                        <p>각 세션이 속한 cluster 번호를 <code>rf_cluster_0</code>, <code>rf_cluster_1</code>, <code>rf_cluster_2</code> one-hot 컬럼으로 바꿔 RF feature에 붙였다.</p>
-                    </div>
-                </article>
-                <article>
-                    <span>4</span>
-                    <div>
-                        <h3>거리 feature도 별도 실험</h3>
-                        <p>각 세션이 세 군집 중심에서 얼마나 떨어져 있는지 <code>rf_cluster_dist_0</code>, <code>rf_cluster_dist_1</code>, <code>rf_cluster_dist_2</code>로 추가한 모델도 따로 비교했다.</p>
-                    </div>
-                </article>
-            </div>
-            <div class="explain-box">
-                <h3>실제로 RF에 추가된 feature</h3>
-                <p>
-                    기존 RF는 방문 페이지 수, 체류 시간, 이탈률, 월, 방문자 유형 같은 원래 feature만 사용했다. 융합 모델에서는 여기에 K-Means가 만든 군집 정보를 추가했다. 예를 들어 어떤 세션이 cluster 2에 속하면 <code>rf_cluster_2=1</code>, <code>rf_cluster_0=0</code>, <code>rf_cluster_1=0</code>처럼 표시된다.
-                </p>
-                <p>
-                    두 번째 실험에서는 one-hot label에 더해 각 세션이 세 군집 중심에서 얼마나 떨어져 있는지도 <code>rf_cluster_dist_0</code>, <code>rf_cluster_dist_1</code>, <code>rf_cluster_dist_2</code>로 붙였다. label은 "어느 군집인가"를 알려주고, distance는 "그 군집 패턴에 얼마나 전형적으로 가까운가"를 알려준다.
-                </p>
-            </div>
-            <div class="two-column">
-                <div>
-                    <h3>Train-only K-Means profile</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Cluster</th>
-                                <th>Rows</th>
-                                <th>Purchases</th>
-                                <th>Purchase rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>0</td><td>7,207</td><td>1,093</td><td>15.17%</td></tr>
-                            <tr><td>1</td><td>1,851</td><td>430</td><td>23.23%</td></tr>
-                            <tr><td>2</td><td>706</td><td>3</td><td>0.42%</td></tr>
-                        </tbody>
-                    </table>
-                    <p class="table-note">
-                        cluster 2는 구매율이 0.42%로 매우 낮아 거의 구매하지 않는 행동군이다. cluster 1은 23.23%로 평균보다 구매 성향이 높다. 이 차이가 RF에 유용한 요약 신호가 될 수 있다.
-                    </p>
-                </div>
-                <div>
-                    <h3>Cluster-derived importance</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Feature</th>
-                                <th>One-hot</th>
-                                <th>One-hot + distance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-	                            <tr><td><code>rf_cluster_2</code></td><td>0.0086</td><td>0.0038</td></tr>
-	                            <tr><td><code>rf_cluster_0</code></td><td>0.0043</td><td>0.0036</td></tr>
-	                            <tr><td><code>rf_cluster_1</code></td><td>0.0038</td><td>0.0016</td></tr>
-	                            <tr><td><code>rf_cluster_dist_2</code></td><td>-</td><td>0.1074</td></tr>
-	                            <tr><td><code>rf_cluster_dist_1</code></td><td>-</td><td>0.0559</td></tr>
-	                            <tr><td><code>rf_cluster_dist_0</code></td><td>-</td><td>0.0456</td></tr>
-                        </tbody>
-                    </table>
-                    <p class="table-note">
-	                        one-hot만 쓴 모델에서는 cluster feature 중요도는 작지만 Recall, F1, ROC-AUC가 baseline보다 개선됐다. distance 모델에서는 거리 feature 중요도가 높게 잡혔지만 test Recall과 F1은 baseline보다 낮았다.
-                    </p>
-                </div>
-            </div>
-            <table class="wide-table fusion-table">
+            <p class="muted">깊이를 무제한으로 두면 train에는 더 잘 맞지만 validation F1은 낮아진다. 깊은 트리가 작은 표본의 우연한 조합까지 규칙처럼 외운 신호로 해석한다.</p>
+        </div>
+        <div>
+            <h3>최종 후보 파라미터</h3>
+            <table>
                 <thead>
-                    <tr>
-                        <th>모델</th>
-                        <th>Accuracy</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1</th>
-                        <th>ROC-AUC</th>
-                        <th>PR-AUC</th>
-                    </tr>
+                    <tr><th>튜닝 목적</th><th>주요 파라미터</th></tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>RF baseline tuned by F1</td>
-	                        <td>0.7284</td>
-	                        <td>0.3224</td>
-	                        <td>0.6675</td>
-	                        <td>0.4348</td>
-	                        <td>0.7871</td>
-	                        <td>0.3726</td>
-                    </tr>
-	                    <tr class="selected">
-	                        <td>RF + KMeans one-hot</td>
-	                        <td>0.7272</td>
-	                        <td>0.3243</td>
-	                        <td>0.6859</td>
-	                        <td>0.4403</td>
-	                        <td>0.7897</td>
-	                        <td>0.3701</td>
-                    </tr>
-                    <tr>
-                        <td>RF + KMeans one-hot + distances</td>
-                        <td>0.7239</td>
-                        <td>0.3166</td>
-                        <td>0.6597</td>
-                        <td>0.4278</td>
-                        <td>0.7844</td>
-                        <td>0.3633</td>
-                    </tr>
+                    <tr><td>F1</td><td><code>n_estimators=150</code>, <code>criterion=log_loss</code>, <code>max_depth=None</code>, <code>min_samples_leaf=5</code>, <code>min_samples_split=50</code>, <code>max_features=sqrt</code></td></tr>
+                    <tr><td>Precision</td><td><code>n_estimators=250</code>, <code>criterion=entropy</code>, <code>max_depth=None</code>, <code>min_samples_leaf=3</code>, <code>min_samples_split=2</code>, <code>max_features=log2</code></td></tr>
                 </tbody>
             </table>
-            <div class="interpretation">
-                <p>
-                    One-hot cluster label만 추가한 모델은 baseline보다 Recall, F1, ROC-AUC를 소폭 개선했다. 중심거리 3개까지 추가하면 distance feature 중요도는 높지만, test Recall과 F1은 baseline보다 낮다.
-                </p>
-            </div>
-            <div class="explain-box">
-                <h3>어떤 부분이 발전했나</h3>
-                <p>
-                    cluster one-hot 모델의 개선 폭은 크지 않다. 따라서 "K-Means를 붙이면 RF가 크게 좋아진다"는 결론은 아니다. 더 정확한 해석은 "방문자 행동 유형을 나타내는 cluster label이 RF에 약간의 추가 정보를 제공했다"이다. baseline 대비 Recall은 0.6675에서 0.6859, F1은 0.4348에서 0.4403으로 올라갔다.
-                </p>
-                <p>
-                    발전한 점은 RF가 개별 변수만 보던 상태에서 "행동 유형"이라는 요약 정보를 함께 보게 됐다는 것이다. cluster 2처럼 구매율이 거의 없는 군집과 cluster 1처럼 구매율이 높은 군집이 구분되면, RF는 비슷한 ExitRates나 체류 시간을 가진 세션 사이에서도 행동 맥락을 조금 더 세밀하게 나눌 수 있다.
-                </p>
-                <p>
-                    distance feature는 세 군집 중심까지의 연속적인 거리 정보를 주면서 모델을 더 복잡하게 만들었다. 이 정보는 feature importance에서는 크게 나타났지만, Recall은 0.6597, F1은 0.4278로 baseline보다 낮았다. 따라서 이번 결과에서는 거리값보다 one-hot cluster label만 추가한 모델을 더 합리적인 융합 후보로 본다.
-                </p>
-            </div>
-        </section>
+            <p>F1 튜닝은 구매자를 놓치지 않는 쪽으로 균형을 잡는다. Precision 튜닝은 "구매라고 찍은 것 중 진짜 구매 비율"을 높이려 하지만, 실제 test에서는 구매자를 덜 잡는 문제가 커졌다.</p>
+        </div>
+    </div>
 
-        <section id="diagnostics" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">07</span>
-                <h2>혼동 행렬과 중요 변수</h2>
-            </div>
-            <div class="explain-box">
-                <h3>혼동 행렬을 보는 방법</h3>
-                <p>
-	                    <code>Actual Purchase</code> 행에서 <code>Pred Purchase</code>가 많을수록 구매자를 잘 잡은 것이다. F1 tuned 모델은 실제 구매자 382명 중 255명을 구매로 잡았고, Precision tuned 모델은 187명을 잡았다. 대신 Precision tuned 모델은 비구매자를 구매로 잘못 찍는 수가 336명으로 더 적다.
-                </p>
-            </div>
-            <div class="two-column">
-                <div>
-                    <h3>Raw test confusion matrix</h3>
-                    <div class="matrix-grid">
-                        <div class="matrix-block">
-                            <h4>F1 tuned</h4>
-                            <div class="matrix">
-                                <span></span><span>Pred No</span><span>Pred Yes</span>
-	                                <span>Actual No</span><strong>1,523</strong><strong>536</strong>
-	                                <span>Actual Yes</span><strong>127</strong><strong>255</strong>
-                            </div>
-                        </div>
-                        <div class="matrix-block">
-                            <h4>Precision tuned</h4>
-                            <div class="matrix">
-                                <span></span><span>Pred No</span><span>Pred Yes</span>
-	                                <span>Actual No</span><strong>1,723</strong><strong>336</strong>
-	                                <span>Actual Yes</span><strong>195</strong><strong>187</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3>상위 변수 중요도</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>순위</th>
-                                <th>F1 tuned</th>
-                                <th>Precision tuned</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-	                            <tr><td>1</td><td>ExitRates 0.1565</td><td>ExitRates 0.1212</td></tr>
-	                            <tr><td>2</td><td>ProductRelated_Duration 0.0986</td><td>total_duration 0.0931</td></tr>
-	                            <tr><td>3</td><td>total_duration 0.0920</td><td>ProductRelated_Duration 0.0906</td></tr>
-	                            <tr><td>4</td><td>BounceRates 0.0770</td><td>avg_time_per_product 0.0841</td></tr>
-	                            <tr><td>5</td><td>avg_time_per_product 0.0733</td><td>total_pages 0.0710</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+    <p class="group-label">성능 비교</p>
+    <h2 id="s-metrics">지표 읽는 기준</h2>
+    <table>
+        <thead>
+            <tr><th>지표</th><th>직관적 의미</th><th>이번 문서에서의 해석</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Accuracy</code></td><td>전체 중 맞힌 비율</td><td>비구매가 많아 높게 나오기 쉬움. 단독 판단 금지.</td></tr>
+            <tr><td><code>Precision</code></td><td>구매라고 예측한 세션 중 실제 구매 비율</td><td>마케팅 비용이 비싸고 오탐을 줄이고 싶을 때 중요.</td></tr>
+            <tr><td><code>Recall</code></td><td>실제 구매자 중 모델이 잡아낸 비율</td><td>구매 가능 후보를 넓게 모으는 목적에서 중요.</td></tr>
+            <tr><td><code>F1</code></td><td>Precision과 Recall의 균형</td><td>이번 RF 후보를 고르는 핵심 기준.</td></tr>
+            <tr><td><code>ROC-AUC</code></td><td>구매 세션을 비구매 세션보다 높게 순위화하는 능력</td><td>전체 순위화 성능 참고용.</td></tr>
+            <tr><td><code>PR-AUC</code></td><td>불균형 데이터에서 Precision-Recall 곡선 아래 면적</td><td>구매 클래스가 적으므로 ROC-AUC보다 더 현실적인 보조 지표.</td></tr>
+        </tbody>
+    </table>
 
-        <section id="insights" class="section">
-            <div class="section-heading">
-                <span class="section-kicker">08</span>
-                <h2>모델 해석과 활용 방향</h2>
+    <h2 id="s-performance">Raw test 결과</h2>
+    <table class="metric-table">
+        <thead>
+            <tr><th>모델</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>PR-AUC</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Random Forest default</td><td>0.8193</td><td>0.4026</td><td>0.3194</td><td>0.3562</td><td>0.7770</td><td>0.3556</td></tr>
+            <tr class="selected"><td>Random Forest tuned by F1</td><td>0.7284</td><td>0.3224</td><td>0.6675</td><td>0.4348</td><td>0.7871</td><td>0.3726</td></tr>
+            <tr><td>Random Forest tuned by Precision</td><td>0.7825</td><td>0.3576</td><td>0.4895</td><td>0.4133</td><td>0.7803</td><td>0.3659</td></tr>
+        </tbody>
+    </table>
+    <div class="gloss">
+        <p><b>해석</b> — default 모델은 Accuracy와 Precision이 높지만 실제 구매자 382명 중 122명 정도만 잡는 Recall 0.3194에 머문다. F1 튜닝 모델은 오탐이 늘어 Accuracy는 낮아지지만, 실제 구매자 382명 중 255명을 잡아낸다. "구매 후보를 넓게 뽑아 후속 액션을 한다"는 목적에는 F1 튜닝이 더 맞다.</p>
+    </div>
+
+    <h2 id="s-fusion">K-Means 군집 feature 융합</h2>
+    <p>군집 feature는 <code>models/clustering/csv/X_train_knn.csv</code>, <code>models/clustering/csv/X_test_knn.csv</code>의 11개 행동 변수를 기준으로 만들었다. 누수를 막기 위해 scaler와 K-Means는 train 데이터에만 fit했고, test 데이터는 같은 변환을 적용한 뒤 predict와 transform만 수행했다.</p>
+
+    <div class="steps">
+        <article class="step">
+            <span>1</span>
+            <div>
+                <h3>기존 split 유지</h3>
+                <p>RF의 <code>X_train</code>, <code>X_test</code>, <code>y_train</code>, <code>y_test</code>를 그대로 썼다. 비교 조건을 바꾸지 않기 위해서다.</p>
             </div>
-            <div class="insight-list">
-                <article>
-                    <h3>이탈 지표가 가장 강한 신호다</h3>
-                    <p><code>ExitRates</code>, <code>BounceRates</code>가 두 모델 모두 상위권에 있다. 세션이 끝나는 지점과 즉시 이탈하는 행동이 구매 예측에서 핵심 분기 역할을 한다.</p>
-                </article>
-                <article>
-                    <h3>체류 시간은 구매 의도와 연결된다</h3>
-                    <p><code>total_duration</code>, <code>ProductRelated_Duration</code>, <code>avg_time_per_product</code>가 중요하게 나타난다. 상품 관련 페이지에서 충분히 머무는 세션은 구매 가능성이 높아진다.</p>
-                </article>
-                <article>
-                    <h3>운영 목적에 따라 모델을 선택해야 한다</h3>
-                    <p>구매 가능 고객을 넓게 잡아 리마케팅 후보를 만들려면 F1 튜닝 모델이 적합하다. 캠페인 비용이 높아 오탐을 줄여야 하면 Precision 튜닝 모델을 별도 후보로 볼 수 있다.</p>
-                </article>
-                <article>
-                    <h3>군집 정보는 보조 신호로 쓰는 게 맞다</h3>
-                    <p>K-Means one-hot feature는 Recall, F1, ROC-AUC를 소폭 개선했다. 그래도 핵심 변수는 여전히 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code>이므로, 군집은 주 모델을 대체하기보다 행동 유형을 요약하는 보조 feature로 해석하는 편이 안전하다.</p>
-                </article>
+        </article>
+        <article class="step">
+            <span>2</span>
+            <div>
+                <h3>train으로만 K-Means 학습</h3>
+                <p>방문 행동 변수 11개를 log 변환하고 표준화한 뒤 <code>KMeans(n_clusters=3)</code>를 train에만 fit했다.</p>
             </div>
-        </section>
-    </main>
+        </article>
+        <article class="step">
+            <span>3</span>
+            <div>
+                <h3>cluster label 추가</h3>
+                <p>세션이 속한 군집 번호를 <code>rf_cluster_0</code>, <code>rf_cluster_1</code>, <code>rf_cluster_2</code> one-hot 컬럼으로 붙였다.</p>
+            </div>
+        </article>
+        <article class="step">
+            <span>4</span>
+            <div>
+                <h3>중심거리 실험</h3>
+                <p>각 세션이 세 군집 중심에서 얼마나 떨어졌는지도 <code>rf_cluster_dist_*</code>로 추가해 별도 비교했다.</p>
+            </div>
+        </article>
+    </div>
+
+    <div class="two-col">
+        <div>
+            <h3>Train-only K-Means profile</h3>
+            <table>
+                <thead>
+                    <tr><th>Cluster</th><th>Rows</th><th>Purchases</th><th>Purchase rate</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>0</td><td>7,207</td><td>1,093</td><td>15.17%</td></tr>
+                    <tr><td>1</td><td>1,851</td><td>430</td><td>23.23%</td></tr>
+                    <tr><td>2</td><td>706</td><td>3</td><td>0.42%</td></tr>
+                </tbody>
+            </table>
+            <p class="muted">cluster 2는 거의 구매하지 않는 행동군, cluster 1은 평균보다 구매 성향이 높은 행동군이다. 이 차이가 RF에 "행동 유형"이라는 요약 신호를 제공한다.</p>
+        </div>
+        <div>
+            <h3>Cluster-derived importance</h3>
+            <table>
+                <thead>
+                    <tr><th>Feature</th><th>One-hot</th><th>One-hot + distance</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>rf_cluster_2</code></td><td>0.0086</td><td>0.0038</td></tr>
+                    <tr><td><code>rf_cluster_0</code></td><td>0.0043</td><td>0.0036</td></tr>
+                    <tr><td><code>rf_cluster_1</code></td><td>0.0038</td><td>0.0016</td></tr>
+                    <tr><td><code>rf_cluster_dist_2</code></td><td>-</td><td>0.1074</td></tr>
+                    <tr><td><code>rf_cluster_dist_1</code></td><td>-</td><td>0.0559</td></tr>
+                    <tr><td><code>rf_cluster_dist_0</code></td><td>-</td><td>0.0456</td></tr>
+                </tbody>
+            </table>
+            <p class="muted">거리 feature는 중요도는 크게 나오지만, 실제 test F1과 Recall은 one-hot만 쓴 모델보다 낮았다. 중요도가 높다고 항상 실전 성능 개선을 뜻하지는 않는다.</p>
+        </div>
+    </div>
+
+    <table class="metric-table">
+        <thead>
+            <tr><th>모델</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>PR-AUC</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>RF baseline tuned by F1</td><td>0.7284</td><td>0.3224</td><td>0.6675</td><td>0.4348</td><td>0.7871</td><td>0.3726</td></tr>
+            <tr class="selected"><td>RF + K-Means one-hot</td><td>0.7272</td><td>0.3243</td><td>0.6859</td><td>0.4403</td><td>0.7897</td><td>0.3701</td></tr>
+            <tr><td>RF + K-Means one-hot + distances</td><td>0.7239</td><td>0.3166</td><td>0.6597</td><td>0.4278</td><td>0.7844</td><td>0.3633</td></tr>
+        </tbody>
+    </table>
+    <div class="decision">
+        <p><b>융합 실험 결론</b> — one-hot cluster label만 추가한 모델은 baseline보다 Recall, F1, ROC-AUC를 조금 올렸다. 반면 중심거리까지 추가한 모델은 복잡도가 늘었지만 F1과 Recall이 내려갔다. 이번 결과에서는 거리값보다 one-hot 라벨만 쓰는 편이 더 합리적이다.</p>
+    </div>
+
+    <p class="group-label">해석과 결론</p>
+    <h2 id="s-diagnostics">혼동 행렬: 실제 구매자를 얼마나 잡았나</h2>
+    <p><code>Actual Purchase</code> 행에서 <code>Pred Purchase</code>가 많을수록 실제 구매자를 잘 잡은 것이다. F1 tuned 모델은 실제 구매자 382명 중 255명을 구매로 잡았고, Precision tuned 모델은 187명을 잡았다. 대신 Precision tuned 모델은 비구매자를 구매로 잘못 찍는 수가 336명으로 더 적다.</p>
+
+    <div class="matrix-grid">
+        <div class="matrix-block">
+            <h4>F1 tuned</h4>
+            <div class="matrix">
+                <span></span><span>Pred No</span><span>Pred Yes</span>
+                <span>Actual No</span><strong>1,523</strong><strong>536</strong>
+                <span>Actual Yes</span><strong>127</strong><strong>255</strong>
+            </div>
+        </div>
+        <div class="matrix-block">
+            <h4>Precision tuned</h4>
+            <div class="matrix">
+                <span></span><span>Pred No</span><span>Pred Yes</span>
+                <span>Actual No</span><strong>1,723</strong><strong>336</strong>
+                <span>Actual Yes</span><strong>195</strong><strong>187</strong>
+            </div>
+        </div>
+    </div>
+
+    <h2 id="s-importance">중요 변수: 모델이 주로 본 신호</h2>
+    <table>
+        <thead>
+            <tr><th>순위</th><th>F1 tuned</th><th>Precision tuned</th><th>해석</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td><code>ExitRates</code> 0.1565</td><td><code>ExitRates</code> 0.1212</td><td>세션이 끝나는 패턴이 구매 여부와 가장 강하게 연결된다.</td></tr>
+            <tr><td>2</td><td><code>ProductRelated_Duration</code> 0.0986</td><td><code>total_duration</code> 0.0931</td><td>상품 또는 전체 페이지에 얼마나 오래 머물렀는지가 중요하다.</td></tr>
+            <tr><td>3</td><td><code>total_duration</code> 0.0920</td><td><code>ProductRelated_Duration</code> 0.0906</td><td>체류 시간 계열 신호가 두 튜닝 모두에서 상위권이다.</td></tr>
+            <tr><td>4</td><td><code>BounceRates</code> 0.0770</td><td><code>avg_time_per_product</code> 0.0841</td><td>즉시 이탈 또는 상품당 평균 관심 시간이 구매 가능성을 가른다.</td></tr>
+            <tr><td>5</td><td><code>avg_time_per_product</code> 0.0733</td><td><code>total_pages</code> 0.0710</td><td>방문 깊이와 상품 탐색 밀도가 보조 신호다.</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="s-conclusion">결론 / 활용 방향</h2>
+    <ul>
+        <li><b>최종 후보</b>: raw test 기준으로는 <b>RF + K-Means one-hot</b>이 가장 납득 가능하다. F1과 Recall이 baseline보다 조금 개선됐고, 거리 feature처럼 불필요하게 복잡해지지 않는다.</li>
+        <li><b>해석</b>: 핵심 신호는 여전히 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code>이다. 군집 라벨은 이 핵심 변수들을 대체하지 않고, 행동 유형을 요약하는 보조 신호로 작동한다.</li>
+        <li><b>운영 관점</b>: 구매 가능 고객을 넓게 모아 리마케팅 후보를 만들려면 F1/Recall 중심 모델이 맞다. 캠페인 단가가 높아 오탐 비용이 크다면 Precision 튜닝 모델을 별도 후보로 둘 수 있다.</li>
+        <li><b>주의</b>: 개선 폭은 작다. 따라서 "K-Means를 붙이면 RF가 크게 좋아진다"가 아니라, "군집 라벨이 RF에 약간의 추가 맥락을 준다"가 정확한 결론이다.</li>
+    </ul>
+</main>
+</div>
+
+<script>
+function toggleTheme() {
+    var current = document.documentElement.getAttribute("data-theme") || localStorage.getItem("theme") || "auto";
+    var next = current === "dark" ? "light" : current === "light" ? "auto" : "dark";
+    localStorage.setItem("theme", next);
+    if (next === "auto") {
+        document.documentElement.removeAttribute("data-theme");
+    } else {
+        document.documentElement.setAttribute("data-theme", next);
+    }
+}
+
+function toggleNav() {
+    document.body.classList.toggle("nav-collapsed");
+}
+
+(function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll("#sidebar a"));
+    var sections = links
+        .map(function (link) {
+            return document.querySelector(link.getAttribute("href"));
+        })
+        .filter(Boolean);
+
+    function activate() {
+        var current = sections[0];
+        sections.forEach(function (section) {
+            if (section.getBoundingClientRect().top <= 120) {
+                current = section;
+            }
+        });
+        links.forEach(function (link) {
+            link.classList.toggle("active", link.getAttribute("href") === "#" + current.id);
+        });
+    }
+
+    document.addEventListener("scroll", activate, { passive: true });
+    activate();
+})();
+</script>
 </body>
 </html>
