@@ -603,7 +603,7 @@ body.nav-collapsed #sidebar {
         <ul>
             <li><a href="#s-metrics">지표 읽는 기준</a></li>
             <li><a href="#s-performance">Raw test 결과</a></li>
-            <li><a href="#s-fusion">K-Means 융합</a></li>
+            <li><a href="#s-fusion">K-Means 군집 변수 추가</a></li>
         </ul>
     </details>
     <details open>
@@ -617,20 +617,20 @@ body.nav-collapsed #sidebar {
 </nav>
 
 <main>
-    <div class="meta">노트북(<code>RandomForest.ipynb</code>) 기반 설명 문서 · 기존 RF split 유지 · KNN/클러스터링 보고서와 같은 순차 읽기용 구성</div>
+    <div class="meta">노트북(<code>RandomForest.ipynb</code>) 기반 설명 문서 · 기존 RF split 유지 · raw test 기준 평가</div>
     <h1>Random Forest 구매 예측 모델 — 설명 문서</h1>
 
-    <p class="lead" id="s-summary"><b>한 문장 요약</b> — Random Forest는 구매자를 넓게 잡는 방향으로 튜닝했을 때 가장 실용적이었고, K-Means 군집 라벨을 one-hot 변수로 추가하면 <b>F1 0.4348 → 0.4403</b>, <b>Recall 0.6675 → 0.6859</b>로 아주 작지만 일관된 개선이 있었다.</p>
+    <p class="lead" id="s-summary"><b>한 문장 요약</b> — F1 기준으로 튜닝한 Random Forest는 raw test에서 <b>F1 0.4348</b>, <b>Recall 0.6675</b>를 기록해 default 모델보다 구매자를 훨씬 넓게 잡았다. K-Means로 요약한 방문 행동 유형을 추가 변수로 반영했을 때의 변화도 함께 살폈다.</p>
 
     <div class="cards" aria-label="핵심 수치">
         <div class="card">
-            <span>최고 F1</span>
-            <strong>0.4403</strong>
-            <span>RF + K-Means one-hot</span>
+            <span>RF F1</span>
+            <strong>0.4348</strong>
+            <span>Random Forest tuned by F1</span>
         </div>
         <div class="card">
-            <span>구매 Recall</span>
-            <strong>0.6859</strong>
+            <span>RF Recall</span>
+            <strong>0.6675</strong>
             <span>실제 구매자 중 잡아낸 비율</span>
         </div>
         <div class="card">
@@ -639,19 +639,19 @@ body.nav-collapsed #sidebar {
             <span>기본 Random Forest</span>
         </div>
         <div class="card">
-            <span>최고 PR-AUC</span>
-            <strong>0.3726</strong>
-            <span>F1 튜닝 RF</span>
+            <span>최고 validation F1</span>
+            <strong>0.4295</strong>
+            <span>max_depth=12 내부 검증</span>
         </div>
     </div>
 
     <p class="group-label">개요</p>
     <h2 id="s-question">분석 질문</h2>
-    <p>이 문서의 핵심 질문은 <b>"방문자가 구매할지 예측할 때 Random Forest만 쓰는 것보다, K-Means가 만든 방문자 행동 유형을 같이 넣으면 도움이 되는가"</b>이다. 여기서 K-Means는 별도의 예측 모델로 투표에 참여하는 것이 아니라, Random Forest가 읽을 수 있는 추가 컬럼을 만들어 주는 역할을 한다.</p>
-    <p>최종 평가는 극단값을 제거하지 않은 <b>raw test</b>를 기준으로 한다. IQR 방식으로 이상치를 제거하면 train 33.83%, test 33.31%가 빠지므로, 성능을 예쁘게 보이게 만드는 주 평가가 아니라 민감도 확인용으로만 보는 편이 안전하다.</p>
+    <p>이 문서의 핵심 질문은 <b>"Random Forest로 방문자의 구매 여부를 얼마나 잘 예측할 수 있고, 어떤 튜닝과 변수가 성능에 영향을 주는가"</b>이다.</p>
+    <p>최종 평가는 극단값을 제거하지 않은 <b>raw test</b>를 기준으로 한다. IQR 방식으로 이상치를 제거하면 train 33.83%, test 33.31%가 빠지므로, 성능을 과대평가할 수 있는 주 평가 기준으로 쓰기보다 민감도 확인용으로 보는 편이 안전하다.</p>
 
     <div class="decision">
-        <p><b>결론부터</b> — K-Means one-hot feature는 성능을 크게 바꾸지는 않았다. 다만 구매자를 더 넓게 잡는 Recall과 균형 지표인 F1이 동시에 조금 올랐기 때문에, 이번 결과에서는 <b>RF + K-Means one-hot</b>을 가장 납득 가능한 최종 후보로 본다.</p>
+        <p><b>결론부터</b> — <b>F1 기준으로 튜닝한 Random Forest</b>가 구매 후보를 넓게 잡는 목적에 가장 잘 맞다. default 모델보다 오탐은 늘지만 실제 구매자를 훨씬 많이 잡아낸다.</p>
     </div>
 
     <h2 id="s-read">이 문서 읽는 법</h2>
@@ -662,11 +662,11 @@ body.nav-collapsed #sidebar {
         </article>
         <article class="mini">
             <h3>K-Means</h3>
-            <p>정답인 <code>Revenue</code>를 보지 않고 행동이 비슷한 세션을 묶는다. 여기서는 방문 세션을 3개 행동 유형으로 나누고, 그 유형 정보를 RF 입력에 추가했다.</p>
+            <p>정답인 <code>Revenue</code>를 보지 않고 행동이 비슷한 세션을 묶는다. 여기서는 방문 세션을 3개 행동 유형으로 나누고, 그 유형 정보를 RF 입력 변수로 추가했다.</p>
         </article>
         <article class="mini">
-            <h3>모델 융합</h3>
-            <p>RF 예측값과 K-Means 예측값을 평균낸 것이 아니다. <code>rf_cluster_0</code> 같은 군집 라벨 또는 중심거리 컬럼을 RF feature에 붙인 방식이다.</p>
+            <h3>군집 변수 추가</h3>
+            <p>RF 예측값과 K-Means 예측값을 평균낸 것이 아니다. <code>rf_cluster_0</code> 같은 군집 라벨 또는 중심거리 컬럼을 RF 입력 변수에 붙여 비교했다.</p>
         </article>
     </div>
 
@@ -714,21 +714,22 @@ body.nav-collapsed #sidebar {
 
     <h2 id="s-tuning">튜닝 이유: Accuracy만 높이면 안 된다</h2>
     <p>구매 비율은 약 15.6%로 낮다. 그래서 대부분을 "비구매"로 예측해도 Accuracy는 꽤 높게 보일 수 있다. 이 분석에서는 구매 후보를 실제로 찾아내는 목적이 중요하므로, Accuracy보다 <b>Recall</b>, <b>F1</b>, <b>PR-AUC</b>를 함께 본다.</p>
+    <p><b>validation F1</b>은 train 데이터를 다시 나눈 내부 validation split에서 계산한 F1이다. 최종 test를 건드리지 않고도 트리 깊이처럼 과적합에 민감한 설정을 비교할 수 있게 해 주며, 구매/비구매가 불균형한 데이터에서 Precision과 Recall 중 한쪽만 좋아지는 모델을 거르기 위한 기준으로 썼다.</p>
 
     <div class="two-col">
         <div>
             <h3>깊이별 validation F1</h3>
             <div class="bar-list" aria-label="깊이별 F1 점수">
-                <div class="bar-row"><span>depth 2</span><div><i style="width:88.8%"></i></div><strong>0.3698</strong></div>
-                <div class="bar-row"><span>depth 4</span><div><i style="width:91.6%"></i></div><strong>0.3813</strong></div>
-                <div class="bar-row"><span>depth 6</span><div><i style="width:94.9%"></i></div><strong>0.3953</strong></div>
-                <div class="bar-row"><span>depth 8</span><div><i style="width:97.2%"></i></div><strong>0.4048</strong></div>
-                <div class="bar-row best"><span>depth 10</span><div><i style="width:100%"></i></div><strong>0.4164</strong></div>
-                <div class="bar-row"><span>depth 12</span><div><i style="width:96.9%"></i></div><strong>0.4036</strong></div>
-                <div class="bar-row"><span>depth 16</span><div><i style="width:84.6%"></i></div><strong>0.3523</strong></div>
-                <div class="bar-row"><span>None</span><div><i style="width:69.9%"></i></div><strong>0.2911</strong></div>
+                <div class="bar-row"><span>depth 2</span><div><i style="width:86.9%"></i></div><strong>0.3734</strong></div>
+                <div class="bar-row"><span>depth 4</span><div><i style="width:89.8%"></i></div><strong>0.3856</strong></div>
+                <div class="bar-row"><span>depth 6</span><div><i style="width:92.8%"></i></div><strong>0.3986</strong></div>
+                <div class="bar-row"><span>depth 8</span><div><i style="width:93.9%"></i></div><strong>0.4033</strong></div>
+                <div class="bar-row"><span>depth 10</span><div><i style="width:96.8%"></i></div><strong>0.4157</strong></div>
+                <div class="bar-row best"><span>depth 12</span><div><i style="width:100%"></i></div><strong>0.4295</strong></div>
+                <div class="bar-row"><span>depth 16</span><div><i style="width:96.3%"></i></div><strong>0.4134</strong></div>
+                <div class="bar-row"><span>None</span><div><i style="width:94.7%"></i></div><strong>0.4068</strong></div>
             </div>
-            <p class="muted">깊이를 무제한으로 두면 train에는 더 잘 맞지만 validation F1은 낮아진다. 깊은 트리가 작은 표본의 우연한 조합까지 규칙처럼 외운 신호로 해석한다.</p>
+            <p class="muted">validation F1은 depth 12에서 0.4295로 가장 높고, 이후에는 train F1이 계속 올라가도 validation F1은 낮아진다. 즉 더 깊은 트리는 학습 데이터에는 더 잘 맞지만, 처음 보는 데이터에서 Precision과 Recall의 균형이 함께 좋아진다고 보기는 어렵다.</p>
         </div>
         <div>
             <h3>최종 후보 파라미터</h3>
@@ -756,6 +757,7 @@ body.nav-collapsed #sidebar {
             <tr><td><code>Precision</code></td><td>구매라고 예측한 세션 중 실제 구매 비율</td><td>마케팅 비용이 비싸고 오탐을 줄이고 싶을 때 중요.</td></tr>
             <tr><td><code>Recall</code></td><td>실제 구매자 중 모델이 잡아낸 비율</td><td>구매 가능 후보를 넓게 모으는 목적에서 중요.</td></tr>
             <tr><td><code>F1</code></td><td>Precision과 Recall의 균형</td><td>이번 RF 후보를 고르는 핵심 기준.</td></tr>
+            <tr><td><code>Validation F1</code></td><td>train 내부 validation split에서 계산한 F1</td><td>최종 test를 반복 사용하지 않고 깊이와 과적합을 비교하는 기준.</td></tr>
             <tr><td><code>ROC-AUC</code></td><td>구매 세션을 비구매 세션보다 높게 순위화하는 능력</td><td>전체 순위화 성능 참고용.</td></tr>
             <tr><td><code>PR-AUC</code></td><td>불균형 데이터에서 Precision-Recall 곡선 아래 면적</td><td>구매 클래스가 적으므로 ROC-AUC보다 더 현실적인 보조 지표.</td></tr>
         </tbody>
@@ -776,8 +778,8 @@ body.nav-collapsed #sidebar {
         <p><b>해석</b> — default 모델은 Accuracy와 Precision이 높지만 실제 구매자 382명 중 122명 정도만 잡는 Recall 0.3194에 머문다. F1 튜닝 모델은 오탐이 늘어 Accuracy는 낮아지지만, 실제 구매자 382명 중 255명을 잡아낸다. "구매 후보를 넓게 뽑아 후속 액션을 한다"는 목적에는 F1 튜닝이 더 맞다.</p>
     </div>
 
-    <h2 id="s-fusion">K-Means 군집 feature 융합</h2>
-    <p>군집 feature는 <code>models/clustering/csv/X_train_knn.csv</code>, <code>models/clustering/csv/X_test_knn.csv</code>의 11개 행동 변수를 기준으로 만들었다. 누수를 막기 위해 scaler와 K-Means는 train 데이터에만 fit했고, test 데이터는 같은 변환을 적용한 뒤 predict와 transform만 수행했다.</p>
+    <h2 id="s-fusion">K-Means 군집 변수 추가</h2>
+    <p>군집 변수는 <code>models/clustering/csv/X_train_knn.csv</code>, <code>models/clustering/csv/X_test_knn.csv</code>의 11개 행동 변수를 기준으로 만들었다. 누수를 막기 위해 scaler와 K-Means는 train 데이터에만 fit했고, test 데이터는 같은 변환을 적용한 뒤 predict와 transform만 수행했다.</p>
 
     <div class="steps">
         <article class="step">
@@ -797,7 +799,7 @@ body.nav-collapsed #sidebar {
         <article class="step">
             <span>3</span>
             <div>
-                <h3>cluster label 추가</h3>
+                <h3>군집 라벨 추가</h3>
                 <p>세션이 속한 군집 번호를 <code>rf_cluster_0</code>, <code>rf_cluster_1</code>, <code>rf_cluster_2</code> one-hot 컬럼으로 붙였다.</p>
             </div>
         </article>
@@ -829,7 +831,7 @@ body.nav-collapsed #sidebar {
             <h3>Cluster-derived importance</h3>
             <table>
                 <thead>
-                    <tr><th>Feature</th><th>One-hot</th><th>One-hot + distance</th></tr>
+                    <tr><th>변수</th><th>One-hot</th><th>One-hot + distance</th></tr>
                 </thead>
                 <tbody>
                     <tr><td><code>rf_cluster_2</code></td><td>0.0086</td><td>0.0038</td></tr>
@@ -840,7 +842,7 @@ body.nav-collapsed #sidebar {
                     <tr><td><code>rf_cluster_dist_0</code></td><td>-</td><td>0.0456</td></tr>
                 </tbody>
             </table>
-            <p class="muted">거리 feature는 중요도는 크게 나오지만, 실제 test F1과 Recall은 one-hot만 쓴 모델보다 낮았다. 중요도가 높다고 항상 실전 성능 개선을 뜻하지는 않는다.</p>
+            <p class="muted">거리 변수는 중요도는 크게 나오지만, 실제 test F1과 Recall은 one-hot만 쓴 모델보다 낮았다. 중요도가 높다고 항상 실전 성능 개선을 뜻하지는 않는다.</p>
         </div>
     </div>
 
@@ -855,7 +857,7 @@ body.nav-collapsed #sidebar {
         </tbody>
     </table>
     <div class="decision">
-        <p><b>융합 실험 결론</b> — one-hot cluster label만 추가한 모델은 baseline보다 Recall, F1, ROC-AUC를 조금 올렸다. 반면 중심거리까지 추가한 모델은 복잡도가 늘었지만 F1과 Recall이 내려갔다. 이번 결과에서는 거리값보다 one-hot 라벨만 쓰는 편이 더 합리적이다.</p>
+        <p><b>K-Means 군집 변수 결과</b> — one-hot 군집 라벨만 추가한 모델은 기준 모델보다 Recall, F1, ROC-AUC가 소폭 상승했다. 중심거리까지 추가한 모델은 복잡도가 늘었지만 F1과 Recall이 내려갔다.</p>
     </div>
 
     <p class="group-label">해석과 결론</p>
@@ -897,10 +899,10 @@ body.nav-collapsed #sidebar {
 
     <h2 id="s-conclusion">결론 / 활용 방향</h2>
     <ul>
-        <li><b>최종 후보</b>: raw test 기준으로는 <b>RF + K-Means one-hot</b>이 가장 납득 가능하다. F1과 Recall이 baseline보다 조금 개선됐고, 거리 feature처럼 불필요하게 복잡해지지 않는다.</li>
-        <li><b>해석</b>: 핵심 신호는 여전히 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code>이다. 군집 라벨은 이 핵심 변수들을 대체하지 않고, 행동 유형을 요약하는 보조 신호로 작동한다.</li>
+        <li><b>결론</b>: raw test 기준으로는 <b>Random Forest tuned by F1</b>이 구매 후보를 넓게 잡는 목적에 가장 잘 맞는다. Accuracy는 default보다 낮지만, 실제 구매자 382명 중 255명을 잡아 Recall과 F1이 크게 개선됐다.</li>
+        <li><b>해석</b>: 핵심 신호는 <code>ExitRates</code>, <code>ProductRelated_Duration</code>, <code>total_duration</code>이다.</li>
         <li><b>운영 관점</b>: 구매 가능 고객을 넓게 모아 리마케팅 후보를 만들려면 F1/Recall 중심 모델이 맞다. 캠페인 단가가 높아 오탐 비용이 크다면 Precision 튜닝 모델을 별도 후보로 둘 수 있다.</li>
-        <li><b>주의</b>: 개선 폭은 작다. 따라서 "K-Means를 붙이면 RF가 크게 좋아진다"가 아니라, "군집 라벨이 RF에 약간의 추가 맥락을 준다"가 정확한 결론이다.</li>
+        <li><b>K-Means 군집 변수</b>: one-hot 군집 라벨은 F1 0.4348 → 0.4403, Recall 0.6675 → 0.6859로 소폭 개선을 보였다.</li>
     </ul>
 </main>
 </div>
